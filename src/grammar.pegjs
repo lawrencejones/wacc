@@ -61,18 +61,18 @@ Param
 */
 Statement
   = 'skip'
-  \ Type Ident '=' AssignRhs
-  \ AssignLhs '=' AssignRhs
-  \ 'read' AssignLhs
-  \ 'free' Expr
-  \ 'return' Expr
-  \ 'exit' Expr
-  \ 'print' Expr
-  \ 'println' Expr
-  \ 'if' Expr 'then' Statement 'else' Statement 'fi'
-  \ 'while' Expr 'do' Statement 'done'
-  \ 'begin' Statement 'end'
-  \ Statement ';' Statement
+  / Type Ident '=' AssignRhs
+  / AssignLhs '=' AssignRhs
+  / 'read' AssignLhs
+  / 'free' Expr
+  / 'return' Expr
+  / 'exit' Expr
+  / 'print' Expr
+  / 'println' Expr
+  / 'if' Expr 'then' Statement 'else' Statement 'fi'
+  / 'while' Expr 'do' Statement 'done'
+  / 'begin' Statement 'end'
+  / Statement ';' Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -84,8 +84,8 @@ Statement
 */
 AssignLhs
   = Ident
-  \ ArrayElem
-  \ PairElem
+  / ArrayElem
+  / PairElem
 
 /*
    Assign Right Hand Side. Defines what is allowed to appear on the right
@@ -93,10 +93,10 @@ AssignLhs
 */
 AssignRhs
   = Expr
-  \ ArrayLiteral
-  \ 'newpair' '(' Expr ',' Expr ')'
-  \ PairElem
-  \ 'call' Ident '(' ArgList? ')'
+  / ArrayLiteral
+  / 'newpair' '(' Expr ',' Expr ')'
+  / PairElem
+  / 'call' Ident '(' ArgList? ')'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function Invokation
@@ -118,28 +118,28 @@ ArgList
 */
 UnaryOp
   = '!'
-  \ '-'
-  \ 'len'
-  \ 'ord'
-  \ 'toInt'
+  / '-'
+  / 'len'
+  / 'ord'
+  / 'toInt'
 
 /*
    Defines all binary operators.
 */
 BinOp
   = '*'
-  \ '/'
-  \ '%'
-  \ '+'
-  \ '-'
-  \ '>'
-  \ '>='
-  \ '<'
-  \ '<='
-  \ '=='
-  \ '!-'
-  \ '&&'
-  \ '||'
+  / '/'
+  / '%'
+  / '+'
+  / '-'
+  / '>'
+  / '>='
+  / '<'
+  / '<='
+  / '=='
+  / '!-'
+  / '&&'
+  / '||'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Types and Expressions
@@ -150,8 +150,8 @@ BinOp
 */
 Type
   = BaseType
-  \ ArrayType
-  \ PairType
+  / ArrayType
+  / PairType
 
 /*
    The barest type classes for use in wacc.
@@ -159,9 +159,9 @@ Type
 */
 BaseType
   = 'int'
-  \ 'bool'
-  \ 'char'
-  \ 'string'
+  / 'bool'
+  / 'char'
+  / 'string'
 
 /*
    Defines the expression token. All wacc expressions are side-effect free,
@@ -169,15 +169,15 @@ BaseType
 */
 Expr
   = IntLiteral
-  \ BoolLiteral
-  \ CharLiteral
-  \ StrLiteral
-  \ PairLiteral
-  \ Ident
-  \ ArrayElem
-  \ UnaryOp Expr
-  \ Expr BinOp Expr
-  \ '(' Expr ')'
+  / BoolLiteral
+  / CharLiteral
+  / StrLiteral
+  / PairLiteral
+  / Ident
+  / ArrayElem
+  / UnaryOp Expr
+  / Expr BinOp Expr
+  / '(' Expr ')'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arrays
@@ -186,9 +186,10 @@ Expr
 /*
    Defines array type declarations. Matches to patterns like `int[]` for
    specifying the array content type.
+   TODO - Clarify that array types are only of base type
 */
 ArrayType
-  = Type '[' ']'
+  = BaseType '[' ']'
 
 /*
    Defines elements within wacc arrays.
@@ -212,15 +213,15 @@ PairType
 */
 PairElem
   = 'fst' Expr
-  \ 'snd' Expr
+  / 'snd' Expr
 
 /*
    Covers what variable types may be used inside a wacc pair.
 */
 PairElemType
   = BaseType
-  \ ArrayType
-  \ 'pair'
+  / ArrayType
+  / 'pair'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Variables and Literals
@@ -248,7 +249,7 @@ IntLiteral
 */
 IntSign
   = '+'
-  \ '-'
+  / '-'
 
 /*
    Defines the true and false string representation of the boolean
@@ -256,7 +257,7 @@ IntSign
 */
 BoolLiteral
   = 'true'
-  \ 'false'
+  / 'false'
 
 /*
    Describes the literal representation of a character, specifically
@@ -278,7 +279,7 @@ StrLiteral
 */
 Character
   = [^(\\\'\")]
-  \ '\\' EscapedChar
+  / '\\' EscapedChar
 
 /*
    Defines the array literal notation. Zero or more elements demarkated
@@ -317,12 +318,12 @@ Digit
 */
 EscapedChar
   = '0'
-  \ 'b'
-  \ 't'
-  \ 'n'
-  \ 'f'
-  \ 'r'
-  \ '"'
-  \ "'"
-  \ '\\'
+  / 'b'
+  / 't'
+  / 'n'
+  / 'f'
+  / 'r'
+  / '"'
+  / "'"
+  / '\\'
 
