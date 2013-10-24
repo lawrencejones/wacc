@@ -9,12 +9,23 @@
 ###############################################################################
 
 Nodes : [
-  BinOps
-  UnaryOps
-  Statements
-  FunctionApplications
-  Program
-  Conditional
-  While
-  For
+  BinOps: [
+    AssignOp: [
+      ['assignee', 'expr']
+    ]
+  ]
+  UnaryOps: [
+  ]
+  Statements: [
+  ]
+  FunctionApplications: [
+  ]
+  Program: [
+  ]
+  Conditional: [
+  ]
+  While: [
+  ]
+  For: [
+  ]
 ]
