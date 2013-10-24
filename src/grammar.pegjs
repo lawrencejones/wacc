@@ -25,6 +25,11 @@ main
 Program
   = 'begin' Function* Statement 'end'
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Functions and Parameters
+///////////////////////////////////////////////////////////////////////////////
+
 /*
    A function is defined by the return type, the function name, a parameter
    list surrounded by parentheses, followed by the terminals `is` and `end`
@@ -46,6 +51,10 @@ ParamList
 Param
   = Type Ident
 
+///////////////////////////////////////////////////////////////////////////////
+// WACC Statements
+///////////////////////////////////////////////////////////////////////////////
+
 /*
    Matches for a statement which can be any of the below. Statements can be
    returned as the result of a function, or used as an exit value.
@@ -64,6 +73,10 @@ Statement
   \ 'while' Expr 'do' Statement 'done'
   \ 'begin' Statement 'end'
   \ Statement ';' Statement
+
+///////////////////////////////////////////////////////////////////////////////
+// Assignment
+///////////////////////////////////////////////////////////////////////////////
 
 /*
    Assign Left Hand Side. Defines the possible elements to appear on the
@@ -85,6 +98,10 @@ AssignRhs
   \ PairElem
   \ 'call' Ident '(' ArgList? ')'
 
+///////////////////////////////////////////////////////////////////////////////
+// Function Invokation
+///////////////////////////////////////////////////////////////////////////////
+
 /*
    Defines a list of arguments to be fed to a function call. Similar to
    a parameter list but without the type declaration.
@@ -92,68 +109,9 @@ AssignRhs
 ArgList
   = Expr (',' Expr)*
 
-/*
-   Defines what is possible for an element of a pair.
-   TODO - lookup exact usage.
-*/
-PairElem
-  = 'fst' Expr
-  \ 'snd' Expr
-
-/*
-   Selection of available types within the wacc static typing system.
-*/
-Type
-  = BaseType
-  \ ArrayType
-  \ PairType
-
-/*
-   The barest type classes for use in wacc.
-   TODO - Fill out details on each type
-*/
-BaseType
-  = 'int'
-  \ 'bool'
-  \ 'char'
-  \ 'string'
-
-/*
-   Defines array type declarations. Matches to patterns like `int[]` for
-   specifying the array content type.
-*/
-ArrayType
-  = Type '[' ']'
-
-/*
-   Defines the declaration behaviour for use of typed pairs.
-*/
-PairType
-  = 'pair' '(' PairElemType ',' PairElemType ')'
-
-/*
-   Covers what variable types may be used inside a wacc pair.
-*/
-PairElemType
-  = BaseType
-  \ ArrayType
-  \ 'pair'
-
-/*
-   Defines the expression token. All wacc expressions are side-effect free,
-   and therefore do not modify program state.
-*/
-Expr
-  = IntLiteral
-  \ BoolLiteral
-  \ CharLiteral
-  \ StrLiteral
-  \ PairLiteral
-  \ Ident
-  \ ArrayElem
-  \ UnaryOp Expr
-  \ Expr BinOp Expr
-  \ '(' Expr ')'
+///////////////////////////////////////////////////////////////////////////////
+// Operators
+///////////////////////////////////////////////////////////////////////////////
 
 /*
    Defines all unary operators.
@@ -183,6 +141,91 @@ BinOp
   \ '&&'
   \ '||'
 
+///////////////////////////////////////////////////////////////////////////////
+// Types and Expressions
+///////////////////////////////////////////////////////////////////////////////
+
+/*
+   Selection of available types within the wacc static typing system.
+*/
+Type
+  = BaseType
+  \ ArrayType
+  \ PairType
+
+/*
+   The barest type classes for use in wacc.
+   TODO - Fill out details on each type
+*/
+BaseType
+  = 'int'
+  \ 'bool'
+  \ 'char'
+  \ 'string'
+
+/*
+   Defines the expression token. All wacc expressions are side-effect free,
+   and therefore do not modify program state.
+*/
+Expr
+  = IntLiteral
+  \ BoolLiteral
+  \ CharLiteral
+  \ StrLiteral
+  \ PairLiteral
+  \ Ident
+  \ ArrayElem
+  \ UnaryOp Expr
+  \ Expr BinOp Expr
+  \ '(' Expr ')'
+
+///////////////////////////////////////////////////////////////////////////////
+// Arrays
+///////////////////////////////////////////////////////////////////////////////
+
+/*
+   Defines array type declarations. Matches to patterns like `int[]` for
+   specifying the array content type.
+*/
+ArrayType
+  = Type '[' ']'
+
+/*
+   Defines elements within wacc arrays.
+*/
+ArrayElem
+  = Expr '[' Expr ']'
+
+///////////////////////////////////////////////////////////////////////////////
+// Pairs
+///////////////////////////////////////////////////////////////////////////////
+
+/*
+   Defines the declaration behaviour for use of typed pairs.
+*/
+PairType
+  = 'pair' '(' PairElemType ',' PairElemType ')'
+
+/*
+   Defines what is possible for an element of a pair.
+   TODO - lookup exact usage.
+*/
+PairElem
+  = 'fst' Expr
+  \ 'snd' Expr
+
+/*
+   Covers what variable types may be used inside a wacc pair.
+*/
+PairElemType
+  = BaseType
+  \ ArrayType
+  \ 'pair'
+
+///////////////////////////////////////////////////////////////////////////////
+// Variables and Literals
+///////////////////////////////////////////////////////////////////////////////
+
 /*
    Defines all idents, where these tokens will represent variable names.
    The rule states that the name must begin with an underscore or letter
@@ -192,11 +235,6 @@ BinOp
 Ident
   = [_a-zA-Z] [_a-zA-Z0-9]*
 
-/*
-   Defines elements within wacc arrays.
-*/
-ArrayElem
-  = Expr '[' Expr ']'
 
 /*
    Int literal is represented by an optionally signed list of digits,
@@ -204,12 +242,6 @@ ArrayElem
 */
 IntLiteral
   = IntSign? Digit+
-
-/*
-   Description of a digit, limited to the numbers from 0 to 9.
-*/
-Digit
-  = [0-9]
 
 /*
    Defines the integer signage for positive or negative notation.
@@ -249,21 +281,6 @@ Character
   \ '\\' EscapedChar
 
 /*
-   Defines the characters that can represent a unicode symbol when
-   used in conjunction with a backslash.
-*/
-EscapedChar
-  = '0'
-  \ 'b'
-  \ 't'
-  \ 'n'
-  \ 'f'
-  \ 'r'
-  \ '"'
-  \ "'"
-  \ '\\'
-
-/*
    Defines the array literal notation. Zero or more elements demarkated
    by commas and represented by an expression token.
 */
@@ -277,6 +294,10 @@ ArrayLiteral
 PairLiteral
   = 'null'
 
+///////////////////////////////////////////////////////////////////////////////
+// Fundamentals
+///////////////////////////////////////////////////////////////////////////////
+
 /*
    Comments begin with a #, follow with a string consisting of any
    characters, followed by the end of line (EOL) terminator.
@@ -284,4 +305,24 @@ PairLiteral
 Comment
   = '#' [^(EOL)] 'EOL'
 
+/*
+   Description of a digit, limited to the numbers from 0 to 9.
+*/
+Digit
+  = [0-9]
+
+/*
+   Defines the characters that can represent a unicode symbol when
+   used in conjunction with a backslash.
+*/
+EscapedChar
+  = '0'
+  \ 'b'
+  \ 't'
+  \ 'n'
+  \ 'f'
+  \ 'r'
+  \ '"'
+  \ "'"
+  \ '\\'
 
