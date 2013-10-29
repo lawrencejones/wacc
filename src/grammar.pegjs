@@ -62,7 +62,7 @@ Statement
 
 StatementType
   = 'skip'
-  / ArrayType Ws+ Ident Ws+ '=' Ws+ ArrayLiteral Ws+
+  / ArrayType Ws+ Ident Ws+ '=' Ws+ ArrayLiteral
   / Param Ws+ '=' Ws+ AssignRhs
   / AssignLhs Ws+ '=' Ws+ AssignRhs
   / 'read' Ws+ AssignLhs
@@ -76,7 +76,7 @@ StatementType
   / 'begin' Ws+ Statement Ws+ 'end'
 
 StatementTail
-  = ';' Ws+ StatementTail
+  = ';' Ws+ StatementType
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
