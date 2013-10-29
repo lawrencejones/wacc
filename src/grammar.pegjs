@@ -11,7 +11,7 @@ WACC = require './nodes'
 
 /* Dummy target for production of final parsed script*/
 main
-  = program:Program { return program; }
+  = program:Program
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lexical Grammer
@@ -56,10 +56,14 @@ Param
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
-   Matches for a statement which can be any of the below. Statements can be
-   returned as the result of a function, or used as an exit value.
+   The various different forms that a statement can take in the wacc
+   specification. This is broken into types, tail and an overall statement
+   type to avoid left recursive issues.
 */
 Statement
+  = StatementType StatementTail?
+
+StatementType
   = 'skip'
   / Type Ident '=' AssignRhs
   / AssignLhs '=' AssignRhs
@@ -72,7 +76,9 @@ Statement
   / 'if' Expr 'then' Statement 'else' Statement 'fi'
   / 'while' Expr 'do' Statement 'done'
   / 'begin' Statement 'end'
-  / Statement ';' Statement
+
+StatementTail
+  = ';' StatementTail
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -166,8 +172,13 @@ BaseType
 /*
    Defines the expression token. All wacc expressions are side-effect free,
    and therefore do not modify program state.
+   Split between the true expr, tail and types, this is to avoid left
+   recursion issues.
 */
 Expr
+  = ExprType ExprTail?
+
+ExprType
   = IntLiteral
   / BoolLiteral
   / CharLiteral
@@ -176,8 +187,10 @@ Expr
   / Ident
   / ArrayElem
   / UnaryOp Expr
-  / Expr BinOp Expr
   / '(' Expr ')'
+
+ExprTail
+  = BinOp Expr
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arrays
@@ -195,7 +208,7 @@ ArrayType
    Defines elements within wacc arrays.
 */
 ArrayElem
-  = Expr '[' Expr ']'
+  = Ident '[' Expr ']'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Pairs
