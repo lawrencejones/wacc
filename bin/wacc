@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+// Load in wacc modules via cli file
+require(require('path').join(__dirname, '..', 'lib', 'cli'));

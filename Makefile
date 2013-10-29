@@ -1,12 +1,19 @@
-# Sample Makefile for the WACC Compiler lab: edit this to build your own comiler
-# Locations
+# WACC Compiler Makefile - Group 27
+COFFEE := coffee
+COFFEE_FLAGS := --compile --bare
+PEG := pegjs
 
-SOURCE_DIR	:= src
-OUTPUT_DIR	:= bin 
+# Glob all the coffee source
+SRC := $(wildcard src/*.coffee | sort)
+LIB := $(SRC:src/%.coffee=lib/%.js) lib/parser.js
 
-# Unix tools
+# Phony all target
+all: $(LIB)
 
-FIND	:= find
-RM	:= rm -rf
-MKDIR	:= mkdir -p
+# The pegjs generated parser
+lib/parser.js: src/grammar.pegjs
+	$(PEG) $< $@
 
+# Rule for all other coffee files
+lib/%.js: src/%.coffee
+	$(COFFEE) $(COFFEE_FLAGS) -o $@ $<

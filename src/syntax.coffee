@@ -1,7 +1,7 @@
 #!/usr/bin/env coffee
 
 fs = require 'fs'
-parser = require '../src/grammar'
+parser = require '../lib/grammar'
 
 # Function to generate syntax error string
 syntaxError = (e, src) ->
