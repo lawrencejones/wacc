@@ -1,0 +1,13 @@
+# positive overflow
+# Output:
+# 
+# 
+
+#Program:#
+
+begin
+  int x = 2000000000 ;
+  println x ;
+  x = x + 2000000000; #err here? 
+  println x 
+end

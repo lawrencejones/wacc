@@ -1,0 +1,12 @@
+# assignment to variable not declared in current scope
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  begin 
+  int x = 5
+  end ;
+  x = 10
+end

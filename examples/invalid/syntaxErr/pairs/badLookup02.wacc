@@ -1,0 +1,10 @@
+# try to directly print pair's second element
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+	pair(int, char) p = newpair(10, 'a') ;
+  println snd p
+end

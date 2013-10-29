@@ -1,0 +1,12 @@
+# if missing else clause
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+  if true 
+  then
+    skip
+  fi
+end

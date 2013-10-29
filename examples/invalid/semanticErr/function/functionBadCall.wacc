@@ -1,0 +1,14 @@
+# function call type mismatch
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+	int f() is
+		return 0 
+	end
+	bool b = call f() ;
+	println b 
+end
+	

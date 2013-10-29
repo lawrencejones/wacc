@@ -1,0 +1,7 @@
+# skip typo
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin skp end

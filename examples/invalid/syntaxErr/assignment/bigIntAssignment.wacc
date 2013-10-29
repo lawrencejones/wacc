@@ -1,0 +1,9 @@
+# int assignment overlow
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+  int x = 2200000000 
+end

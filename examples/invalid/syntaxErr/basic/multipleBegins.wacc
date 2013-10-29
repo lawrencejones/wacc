@@ -1,0 +1,13 @@
+# begin missing closing end
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin 
+  skip 
+end
+
+begin 
+  skip 
+end

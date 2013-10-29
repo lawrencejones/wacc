@@ -1,0 +1,12 @@
+# simple read statement
+# Output:
+# input an integer to continue...
+# #user input#
+
+#Program:#
+
+begin
+	int x = 10;
+  println "input an integer to continue..." ;
+	read x
+end

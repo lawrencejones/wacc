@@ -1,0 +1,10 @@
+# exit with unreachable print
+# Output:
+# #empty#
+
+#Program:#
+
+begin
+	exit 42 ;
+	println "Should not print this."
+end

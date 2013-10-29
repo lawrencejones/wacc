@@ -1,0 +1,9 @@
+# type mismatch: int <- string
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  int i = "foo"
+end

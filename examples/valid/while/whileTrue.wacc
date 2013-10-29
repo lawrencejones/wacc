@@ -1,0 +1,16 @@
+# simple infinite while loop
+# Output
+# looping...
+# looping...
+# looping...
+# looping...
+# #forever#
+
+#Program:#
+
+begin
+  while true do
+    println "looping..."
+  done ; 
+  println "end of loop"
+end

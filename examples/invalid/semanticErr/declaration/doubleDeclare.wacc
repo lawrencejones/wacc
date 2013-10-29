@@ -1,0 +1,10 @@
+# redeclaration of variable
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  int x = 10 ;
+  int x = 20
+end

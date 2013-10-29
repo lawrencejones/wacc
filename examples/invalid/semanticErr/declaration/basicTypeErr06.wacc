@@ -1,0 +1,9 @@
+# type mismatch: bool <- string
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  bool b = "true"
+end

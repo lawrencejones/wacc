@@ -1,0 +1,11 @@
+# while typo
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+  whil false do
+    skip
+  done
+end

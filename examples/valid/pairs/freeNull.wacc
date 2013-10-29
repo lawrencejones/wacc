@@ -1,0 +1,11 @@
+# Create and free a null pair
+# Output:
+# #runtime error#
+
+#Program:#
+
+begin
+  pair(pair, pair) a = null ;
+  free a 
+end
+

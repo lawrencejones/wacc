@@ -6,9 +6,6 @@
 // Desc: pegjs file that describes the syntax for the WACC language.
 ///////////////////////////////////////////////////////////////////////////////
 
-/* Require the wacc node descriptions */
-WACC = require './nodes'
-
 /* Dummy target for production of final parsed script*/
 main
   = program:Program
@@ -23,7 +20,7 @@ main
    zero or more functions.
 */
 Program
-  = 'begin' Function* Statement 'end'
+  = 'begin' Ws+ (Function Ws+)* Statement Ws+ 'end'
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -36,7 +33,7 @@ Program
    which encapsulate statements.
 */
 Function
-  = Type Ident '(' ParamList? ')' 'is' Statement 'end'
+  = Type Ws+ Ident Ws+ '(' ParamList? ')' Ws+ 'is' Ws+ Statement Ws+ 'end'
 
 /*
    Defines a list of parameter declarations with their respective types for
@@ -49,7 +46,7 @@ ParamList
    Defines a single parameter token.
 */
 Param
-  = Type Ident
+  = Type Ws+ Ident
 
 ///////////////////////////////////////////////////////////////////////////////
 // WACC Statements
@@ -61,24 +58,25 @@ Param
    type to avoid left recursive issues.
 */
 Statement
-  = StatementType StatementTail?
+  = StatementType Ws+ StatementTail?
 
 StatementType
   = 'skip'
-  / Type Ident '=' AssignRhs
-  / AssignLhs '=' AssignRhs
-  / 'read' AssignLhs
-  / 'free' Expr
-  / 'return' Expr
-  / 'exit' Expr
-  / 'print' Expr
-  / 'println' Expr
-  / 'if' Expr 'then' Statement 'else' Statement 'fi'
-  / 'while' Expr 'do' Statement 'done'
-  / 'begin' Statement 'end'
+  / ArrayType Ws+ Ident Ws+ '=' Ws+ ArrayLiteral Ws+
+  / Param Ws+ '=' Ws+ AssignRhs
+  / AssignLhs Ws+ '=' Ws+ AssignRhs
+  / 'read' Ws+ AssignLhs
+  / 'free' Ws+ Expr
+  / 'return' Ws+ Expr
+  / 'exit' Ws+ Expr
+  / 'print' Ws+ Expr
+  / 'println' Ws+ Expr
+  / 'if' Ws+ Expr Ws+ 'then' Ws+ Statement Ws+ 'else' Ws+ Statement Ws+ 'fi'
+  / 'while' Ws+ Expr Ws+ 'do' Ws+ Statement Ws+ 'done'
+  / 'begin' Ws+ Statement Ws+ 'end'
 
 StatementTail
-  = ';' StatementTail
+  = ';' Ws+ StatementTail
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -100,9 +98,9 @@ AssignLhs
 AssignRhs
   = Expr
   / ArrayLiteral
-  / 'newpair' '(' Expr ',' Expr ')'
+  / 'newpair' Ws* '(' Ws* Expr Ws* ',' Ws* Expr Ws* ')' Ws+
   / PairElem
-  / 'call' Ident '(' ArgList? ')'
+  / 'call' Ws+ Ident '(' Ws* ArgList? Ws* ')'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function Invokation
@@ -113,7 +111,7 @@ AssignRhs
    a parameter list but without the type declaration.
 */
 ArgList
-  = Expr (',' Expr)*
+  = Expr (Ws* ',' Ws+ Expr)*
 
 ///////////////////////////////////////////////////////////////////////////////
 // Operators
@@ -155,8 +153,8 @@ BinOp
    Selection of available types within the wacc static typing system.
 */
 Type
-  = BaseType
-  / ArrayType
+  = ArrayType
+  / BaseType
   / PairType
 
 /*
@@ -186,11 +184,11 @@ ExprType
   / PairLiteral
   / Ident
   / ArrayElem
-  / UnaryOp Expr
-  / '(' Expr ')'
+  / UnaryOp Ws+ Expr
+  / '(' Ws* Expr Ws* ')'
 
 ExprTail
-  = BinOp Expr
+  = Ws+ BinOp Ws+ Expr
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arrays
@@ -202,13 +200,13 @@ ExprTail
    TODO - Clarify that array types are only of base type
 */
 ArrayType
-  = BaseType '[' ']'
+  = BaseType '[]'
 
 /*
    Defines elements within wacc arrays.
 */
 ArrayElem
-  = Ident '[' Expr ']'
+  = Ident '[' Ws* Expr Ws* ']'
 
 ///////////////////////////////////////////////////////////////////////////////
 // Pairs
@@ -218,15 +216,18 @@ ArrayElem
    Defines the declaration behaviour for use of typed pairs.
 */
 PairType
-  = 'pair' '(' PairElemType ',' PairElemType ')'
+  = 'pair' '(' Ws* PairElemType Ws* ',' Ws* PairElemType Ws* ')'
 
 /*
    Defines what is possible for an element of a pair.
    TODO - lookup exact usage.
 */
 PairElem
-  = 'fst' Expr
-  / 'snd' Expr
+  = PairAccessor Ws+ Expr
+
+PairAccessor
+  = 'fst'
+  / 'snd'
 
 /*
    Covers what variable types may be used inside a wacc pair.
@@ -248,7 +249,42 @@ PairElemType
 */
 Ident
   = [_a-zA-Z] [_a-zA-Z0-9]*
+  / !ReservedWord
 
+/*
+   Defines all the reserved words of the language, including keywords
+   such as 'begin', types such as 'int', etc.
+*/
+ReservedWord
+  = 'begin'       // program
+  / 'end'
+  / 'is'          // function
+  / 'skip'        // statements
+  / 'read'
+  / 'free'
+  / 'return'
+  / 'exit'
+  / 'print'
+  / 'println'
+  / 'if'          // if
+  / 'then'
+  / 'else'
+  / 'fi'
+  / 'while'       // while
+  / 'do'
+  / 'done'
+  / 'newpair'     // builtins
+  / 'call'
+  / 'len'
+  / 'ord'
+  / 'toInt'
+  / 'int'         // types
+  / 'bool'
+  / 'char'
+  / 'string'
+  / 'pair'
+  / 'fst'         // pair accessors
+  / 'snd'
 
 /*
    Int literal is represented by an optionally signed list of digits,
@@ -299,7 +335,7 @@ Character
    by commas and represented by an expression token.
 */
 ArrayLiteral
-  = '[' (Expr (',' Expr)*)* ']'
+  = '[' Ws* (Expr ( Ws* ',' Ws* Expr)*)* Ws* ']'
 
 /*
    Pairs are actually pointers, and so the literal representation is
@@ -317,7 +353,7 @@ PairLiteral
    characters, followed by the end of line (EOL) terminator.
 */
 Comment
-  = '#' [^(EOL)] 'EOL'
+  = '#' (!Eol)* Eol
 
 /*
    Description of a digit, limited to the numbers from 0 to 9.
@@ -339,4 +375,16 @@ EscapedChar
   / '"'
   / "'"
   / '\\'
+
+/*
+   Defines the different characters that may represent whitespace.
+*/
+Ws
+  = [' '\s\t\r\n]
+
+/*
+   Defines the wacc end of line character.
+*/
+Eol
+  = [\n\r]
 

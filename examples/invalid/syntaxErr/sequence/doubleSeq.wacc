@@ -1,0 +1,10 @@
+# missing sequential composition
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin 
+  skip;;
+  skip 
+end

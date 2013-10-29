@@ -1,0 +1,12 @@
+# program missing body after function declaration
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+	int f() is
+		return 0 
+	end
+end
+	

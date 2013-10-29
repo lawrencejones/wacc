@@ -1,0 +1,9 @@
+# type mismatch: int <- char
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  int i = 'f'
+end

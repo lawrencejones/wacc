@@ -1,0 +1,7 @@
+# extra sequential composition 
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin skip end;

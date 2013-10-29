@@ -1,0 +1,9 @@
+# type mismatch: int <- bool
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  int i = true
+end

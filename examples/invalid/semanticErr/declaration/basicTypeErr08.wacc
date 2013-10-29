@@ -1,0 +1,9 @@
+# type mismatch: char <- bool
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  char c = false
+end

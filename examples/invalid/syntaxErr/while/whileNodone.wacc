@@ -1,0 +1,10 @@
+# while missing closing done
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+  while false do
+    skip
+end

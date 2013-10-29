@@ -1,0 +1,9 @@
+# type mismatch: string <- char
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  string s = 'h'
+end

@@ -1,0 +1,13 @@
+# if condition type mismatch
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  if 15 + 6 then 
+    skip 
+  else 
+    skip
+  fi
+end

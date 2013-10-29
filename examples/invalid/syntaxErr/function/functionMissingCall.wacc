@@ -1,0 +1,13 @@
+# program missing call token at function use
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+	int f() is
+		return 0 
+	end
+  int x = f()
+end
+	

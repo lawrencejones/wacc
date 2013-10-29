@@ -1,0 +1,15 @@
+# program missing body after function declaration
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+	int f() is
+		bool b = true 
+	end
+
+  int x = call f();
+  println x
+end
+	

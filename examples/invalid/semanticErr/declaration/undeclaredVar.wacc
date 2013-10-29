@@ -1,0 +1,9 @@
+# assignment to undeclared variable
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  x = 10
+end

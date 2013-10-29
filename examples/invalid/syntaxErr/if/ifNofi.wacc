@@ -1,0 +1,13 @@
+# if missing closing fi
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+  if true 
+  then
+    skip
+  else
+    skip
+end

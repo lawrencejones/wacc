@@ -1,0 +1,13 @@
+# multiplying a negative integer - should this runtime error?
+# Output:
+# 
+# 
+
+#Program:#
+
+begin
+  int x = -20000 ;
+  println x ;
+  x = x*100000000; #err here? 
+  println x 
+end

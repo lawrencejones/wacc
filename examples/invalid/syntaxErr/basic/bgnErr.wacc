@@ -1,0 +1,7 @@
+# begin token typo
+# Output:
+# #syntax error#
+
+#Program:#
+
+bgn skip end

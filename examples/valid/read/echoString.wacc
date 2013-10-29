@@ -1,0 +1,15 @@
+# echoes whatever is sent to stdin dropping all whitespace
+# Output:
+# #user input
+# #repeat user input#
+# #forever#
+
+#Program:#
+
+begin
+	char c = '\0' ;
+	while true do
+		read c ;
+		print c
+	done
+end

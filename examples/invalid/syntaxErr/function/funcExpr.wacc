@@ -1,0 +1,13 @@
+# function calls are not first-class expressions
+# Output:
+# #syntax error#
+
+#Program:#
+
+begin
+	int f() is
+		return 0 
+	end
+  int x = f() + f()
+end
+	

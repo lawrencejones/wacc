@@ -1,0 +1,9 @@
+# basic exit statement
+# Output:
+# #empty#
+
+#Program:#
+
+begin
+	exit 7
+end

@@ -1,0 +1,10 @@
+# attempt dereference of a null pair by reading into an element of it
+# Output
+# #runtime error#
+
+#Program:#
+
+begin
+	pair(int, int) p = null ;
+	read snd p
+end

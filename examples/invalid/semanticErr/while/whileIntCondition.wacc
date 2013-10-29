@@ -1,0 +1,11 @@
+# while condition type mismatch
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  while 15 + 6 do
+    skip
+  done
+end

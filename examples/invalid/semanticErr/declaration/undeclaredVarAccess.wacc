@@ -1,0 +1,10 @@
+# assignment to undeclared variable
+# Output:
+# #semantic error#
+
+#Program:#
+
+begin
+  int x = 10 ;
+  x = x + y
+end

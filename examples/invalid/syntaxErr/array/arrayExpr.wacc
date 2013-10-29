@@ -1,0 +1,10 @@
+# array literals are not first-class expressions
+# Output
+# #syntax error#
+
+#Program:#
+
+begin
+  int[] b = [1, 2, 3] ++ [4] ;
+	println b[3]
+end
