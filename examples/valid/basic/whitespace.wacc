@@ -6,6 +6,6 @@
 
 begin
 	int a=13;	
-  if a==13then a=1else a=0fi;
+  if a==13 then a=1 else a=0fi;
   println a
 end

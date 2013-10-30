@@ -122,5 +122,6 @@ run = (err, filename, src, options) ->
 
 # Begin loading files
 targets.map (t) ->
-  fs.readFile(t, 'utf8', (err, src) -> run(err, t, src, options))
+  fs.readFile t, 'utf8', (err, src) ->
+    run(err, t, src.replace(/\t/g, '  '), options)
 

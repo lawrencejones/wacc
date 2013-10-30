@@ -23,7 +23,7 @@ Program
   = Comment* Body? Ws* (Ws+ Comment*)?
 
 Body
-  = ('begin' Ws+ [Function, Comment]* Statement Ws* 'end')
+  = ('begin' Ws+ [Function, Comment]* Statement Ws+ 'end')
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,26 +61,26 @@ Param
    type to avoid left recursive issues.
 */
 Statement
-  = StatementType (Ws+ StatementTail)?
+  = StatementType StatementTail?
 
 StatementType
   = 'skip'
+  / Param Ws* '=' Ws* AssignRhs
   / ArrayType Ws+ Ident Ws+ '=' Ws+ ArrayLiteral
-  / Param Ws+ '=' Ws+ AssignRhs
-  / AssignLhs Ws+ '=' Ws+ AssignRhs
+  / AssignLhs Ws* '=' Ws* AssignRhs
   / 'read' Ws+ AssignLhs
   / 'free' Ws+ Expr
   / 'return' Ws+ Expr
   / 'exit' Ws+ Expr
   / 'print' Ws+ Expr
   / 'println' Ws+ Expr
-  / 'if' Ws+ Expr Ws+ 'then' Ws+ Statement Ws+ 'else' Ws+ Statement Ws+ 'fi'
+  / 'if' Ws+ Expr Ws* 'then' Ws+ Statement Ws* 'else' Ws+ Statement Ws* 'fi'
   / 'while' Ws+ Expr Ws+ 'do' Ws+ Statement Ws+ 'done'
   / 'begin' Ws+ Statement Ws+ 'end'
   / Comment   // TODO - check this is true
 
 StatementTail
-  = ';' Ws+ StatementType
+  = ';' Ws* Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -181,18 +181,18 @@ Expr
   = ExprType ExprTail?
 
 ExprType
-  = IntLiteral
+  = Ident
+  / IntLiteral
   / BoolLiteral
   / CharLiteral
   / StrLiteral
   / PairLiteral
-  / Ident
   / ArrayElem
   / UnaryOp Ws+ Expr
   / '(' Ws* Expr Ws* ')'
 
 ExprTail
-  = Ws+ BinOp Ws+ Expr
+  = Ws* BinOp Ws* Expr
 
 ///////////////////////////////////////////////////////////////////////////////
 // Arrays
