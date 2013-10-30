@@ -8,6 +8,7 @@
 ###############################################################################
 
 fs = require 'fs'
+wacc = require 'module'
 
 # List of command line options for wacc
 optAliases = {
