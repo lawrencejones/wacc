@@ -20,7 +20,10 @@ main
    zero or more functions.
 */
 Program
-  = 'begin' Ws+ (Function Ws+)* Statement Ws+ 'end'
+  = Comment* Body? Ws* (Ws+ Comment*)?
+
+Body
+  = ('begin' Ws+ [Function, Comment]* Statement Ws* 'end')
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,14 +36,14 @@ Program
    which encapsulate statements.
 */
 Function
-  = Type Ws+ Ident Ws+ '(' ParamList? ')' Ws+ 'is' Ws+ Statement Ws+ 'end'
+  = Type Ws+ Ident Ws* '(' Ws* ParamList? Ws* ')' Ws+ 'is' Ws+ Statement Ws+ 'end'
 
 /*
    Defines a list of parameter declarations with their respective types for
    defining a function type signature.
 */
 ParamList
-  = Param (',' Param)*
+  = Param (',' Ws* Param)*
 
 /*
    Defines a single parameter token.
@@ -58,7 +61,7 @@ Param
    type to avoid left recursive issues.
 */
 Statement
-  = StatementType Ws+ StatementTail?
+  = StatementType (Ws+ StatementTail)?
 
 StatementType
   = 'skip'
@@ -74,6 +77,7 @@ StatementType
   / 'if' Ws+ Expr Ws+ 'then' Ws+ Statement Ws+ 'else' Ws+ Statement Ws+ 'fi'
   / 'while' Ws+ Expr Ws+ 'do' Ws+ Statement Ws+ 'done'
   / 'begin' Ws+ Statement Ws+ 'end'
+  / Comment   // TODO - check this is true
 
 StatementTail
   = ';' Ws+ StatementType
@@ -248,8 +252,7 @@ PairElemType
    or underscores.
 */
 Ident
-  = [_a-zA-Z] [_a-zA-Z0-9]*
-  / !ReservedWord
+  = !ReservedWord [_a-zA-Z] [_a-zA-Z0-9]*
 
 /*
    Defines all the reserved words of the language, including keywords
@@ -353,7 +356,7 @@ PairLiteral
    characters, followed by the end of line (EOL) terminator.
 */
 Comment
-  = '#' (!Eol)* Eol
+  = Ws* '#' [^\n\r]* [\n\r] Ws*
 
 /*
    Description of a digit, limited to the numbers from 0 to 9.
@@ -380,11 +383,6 @@ EscapedChar
    Defines the different characters that may represent whitespace.
 */
 Ws
-  = [' '\s\t\r\n]
+  = [' '\t\r\n]
 
-/*
-   Defines the wacc end of line character.
-*/
-Eol
-  = [\n\r]
 

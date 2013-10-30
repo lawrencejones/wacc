@@ -7,8 +7,8 @@
 #       as a single wacc object that will contain all functions, data etc.
 ###############################################################################
 
-syntaxParser = require 'syntax'
-nodes = require 'nodes'
+syntaxParser = require './syntax'
+nodes = require './nodes'
 
 Wacc =
 
@@ -19,7 +19,9 @@ Wacc =
   Compiler: null
   Nodes: nodes
   
+  # Can throw a syntax error
   parse: (src, options) ->
+    @Parser(src)
 
   analyse: (ast, options) ->
 

@@ -33,3 +33,4 @@
 
 #ignore mac ds_store
 .DS_Store
+recompile

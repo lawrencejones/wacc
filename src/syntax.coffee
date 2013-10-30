@@ -10,7 +10,7 @@
 ###############################################################################
 
 fs = require 'fs'
-parser = require 'parser'
+parser = require './parser'
 
 # Function to generate syntax error string
 syntaxError = (e, src) ->

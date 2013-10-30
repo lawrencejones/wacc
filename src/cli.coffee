@@ -8,7 +8,7 @@
 ###############################################################################
 
 fs = require 'fs'
-wacc = require 'module'
+wacc = require './module'
 
 # List of command line options for wacc
 optAliases = {
@@ -24,7 +24,6 @@ optAliases = {
 legalOptions = [].concat (["-#{k}",v] for own k,v of optAliases)...
 # Loop back aliases
 optAliases[v] = v for k,v of optAliases
-console.log optAliases
 # Set up max and min number of targets after options
 targetMin = targetMax = 1
 
@@ -40,12 +39,12 @@ if invalid.length > 0
   process.exit 1
 
 # Verify that target source files have been supplied
-if not targetMin < targets.length < targetMax
+if not (targetMin <= targets.length <= targetMax)
   switch targets.length
     when 0 then console.error \
-      'Please supply source file'
+      'Please supply source file(s).'
     else console.error \
-      'Too many source files'
+      'Too many source files.'
   process.exit 1
 
 # Verify that the target files exist
@@ -57,7 +56,6 @@ for t in targets
 # Process flags into their correct switches
 options = {}
 options[optAliases[f]] = true for f in valid
-console.log options
 
 ###############################################################################
 # Define Compiler Steps
@@ -66,10 +64,22 @@ console.log options
 # Supplied as callback to file read function
 run = (err, filename, src, options) ->
 
+  # Unsupported feature
+  unsupported = (dump, feature) ->
+    # Note to console that this is unsupported
+    console.error \
+      "Unsupported feature '#{feature}'"
+    console.log dump if options['--verbose']
+
   # Parsing, returns abstract syntax tree
   parse = (src) ->
-    # Parse the given source
-    tree = wacc.parse(src)
+    try
+      # Parse the given source
+      tree = wacc.parse(src, options)
+    catch err
+      # If error then exit
+      console.error 'Terminating due to syntax error.'
+      process.exit 1
     checkSemantics(tree, 'Semantic Analysis')
 
   # Check semantics
@@ -107,12 +117,8 @@ run = (err, filename, src, options) ->
       # TODO - Implement binary execution
       console.log "Finished executing file '#{filename}'"
 
-  # Unsupported feature
-  unsupported = (dump, feature) ->
-    # Note to console that this is unsupported
-    console.error \
-      "Unsupported feature '#{feature}'"
-    console.log dump if options['--verbose']
+
+  parse(src)
 
 # Begin loading files
 targets.map (t) ->
