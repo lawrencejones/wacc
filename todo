@@ -1,0 +1,31 @@
+
+L(awrence)  O(ctavian)  A(lan)  S(ean)
+
+[ ]  L  ├── advanced
+[ ]  L  ├── array
+[ ]  L  ├── assignment
+[X]  L  ├── basic
+[ ]  L  ├── declaration
+
+
+[ ]  O  ├── exit
+[ ]  O  ├── expressions
+[ ]  O  ├── function
+[ ]  O  ├── if
+
+
+[ ]  A  ├── pairs
+[ ]  A  ├── print
+[ ]  A  ├── read
+
+
+[ ]  L  ├── runtimeErr
+[ ]     │     ├── arrayOutOfBounds
+[ ]     │     ├── divideByZero
+[ ]     │     ├── integerOverflow
+[ ]     │     └── nullDereference
+
+ 
+[ ]  S  ├── scope
+[ ]  S  ├── sequence
+[ ]  S  └── while
