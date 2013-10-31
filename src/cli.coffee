@@ -25,18 +25,40 @@ legalOptions = [].concat (["-#{k}",v] for own k,v of optAliases)...
 # Loop back aliases
 optAliases[v] = v for k,v of optAliases
 # Set up max and min number of targets after options
-targetMin = targetMax = 1
+[targetMin, targetMax] = [1, 20]
 
 # Split argv into valid invalid and targets
 argv = process.argv[2..]
 [valid, invalid, targets] = argv.reduce ((v,c) ->
   v[+(legalOptions.indexOf(c) == -1) + +(not /\-.+/.test(c))].push c; v), [[],[],[]]
 
+# Process flags into their correct switches
+options = {}
+options[optAliases[f]] = true for f in valid
 
 # Verify no invalid flags
 if invalid.length > 0
   console.error "Invalid flags: #{invalid.join ', '}"
   process.exit 1
+
+# If recursive is set, then generate list of files
+if options['--recursive']
+  files = []
+  for dir in targets
+    try
+      if not fs.statSync(dir).isDirectory()
+        console.error \
+          "The given target '#{dir}' is not a directory."
+        process.exit 1
+      else files.push fs.readdirSync(dir).map((f) -> "#{dir}/#{f}")
+    catch err
+      if err.isInstanceOf ENOENT then console.error \
+        "The given target '#{dir}' does not exist."
+      process.exit 1
+  # Flatten and sanitise the list of files, assign to targets
+  targets = files.reduce ((a, b) ->
+    a.concat(b.map (f) -> f.replace(/\/\//g, '/'))), []
+
 
 # Verify that target source files have been supplied
 if not (targetMin <= targets.length <= targetMax)
@@ -53,10 +75,6 @@ for t in targets
     console.error "Error reading file '#{t}'"
     process.exit 1
 
-# Process flags into their correct switches
-options = {}
-options[optAliases[f]] = true for f in valid
-
 ###############################################################################
 # Define Compiler Steps
 ###############################################################################
@@ -72,10 +90,10 @@ run = (err, filename, src, options) ->
     console.log dump if options['--verbose']
 
   # Parsing, returns abstract syntax tree
-  parse = (src) ->
+  parse = (src, filename) ->
     try
       # Parse the given source
-      tree = wacc.parse(src, options)
+      tree = wacc.parse(src, filename)
     catch err
       # If error then exit
       console.error 'Terminating due to syntax error.'
@@ -117,8 +135,7 @@ run = (err, filename, src, options) ->
       # TODO - Implement binary execution
       console.log "Finished executing file '#{filename}'"
 
-
-  parse(src)
+  parse(src, filename)
 
 # Begin loading files
 targets.map (t) ->

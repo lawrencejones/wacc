@@ -6,6 +6,7 @@
 
 begin
 	int[] a = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ;
+  a[1] = 1;
 	int i = 0 ;
 	while i < 10 
 	do

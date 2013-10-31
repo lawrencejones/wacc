@@ -23,8 +23,7 @@ Program
   = Comment* Body? Ws* (Ws+ Comment*)?
 
 Body
-  = ('begin' Ws+ [Function, Comment]* Statement Ws+ 'end')
-
+  = ('begin' Ws+ (Function/Comment)* Statement Ws+ 'end')
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -65,8 +64,8 @@ Statement
 
 StatementType
   = 'skip'
+  / ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
   / Param Ws* '=' Ws* AssignRhs
-  / ArrayType Ws+ Ident Ws+ '=' Ws+ ArrayLiteral
   / AssignLhs Ws* '=' Ws* AssignRhs
   / 'read' Ws+ AssignLhs
   / 'free' Ws+ Expr
@@ -75,12 +74,11 @@ StatementType
   / 'print' Ws+ Expr
   / 'println' Ws+ Expr
   / 'if' Ws+ Expr Ws* 'then' Ws+ Statement Ws* 'else' Ws+ Statement Ws* 'fi'
-  / 'while' Ws+ Expr Ws+ 'do' Ws+ Statement Ws+ 'done'
+  / 'while' Ws+ Expr Ws* 'do' Ws+ Statement Ws* 'done'
   / 'begin' Ws+ Statement Ws+ 'end'
-  / Comment   // TODO - check this is true
 
 StatementTail
-  = ';' Ws* Statement
+  = Ws* ';' Ws* Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -91,9 +89,9 @@ StatementTail
    left of the assignment operator.
 */
 AssignLhs
-  = Ident
-  / ArrayElem
+  = ArrayElem
   / PairElem
+  / Ident
 
 /*
    Assign Right Hand Side. Defines what is allowed to appear on the right
@@ -181,15 +179,15 @@ Expr
   = ExprType ExprTail?
 
 ExprType
-  = Ident
+  = '(' Ws* Expr Ws* ')'
+  / ArrayElem
+  / PairLiteral
   / IntLiteral
   / BoolLiteral
   / CharLiteral
   / StrLiteral
-  / PairLiteral
-  / ArrayElem
   / UnaryOp Ws+ Expr
-  / '(' Ws* Expr Ws* ')'
+  / Ident
 
 ExprTail
   = Ws* BinOp Ws* Expr
@@ -204,7 +202,7 @@ ExprTail
    TODO - Clarify that array types are only of base type
 */
 ArrayType
-  = BaseType '[]'
+  = BaseType '[' ']'
 
 /*
    Defines elements within wacc arrays.

@@ -20,8 +20,8 @@ Wacc =
   Nodes: nodes
   
   # Can throw a syntax error
-  parse: (src, options) ->
-    @Parser(src)
+  parse: (src, filename) ->
+    @Parser(src, filename)
 
   analyse: (ast, options) ->
 
