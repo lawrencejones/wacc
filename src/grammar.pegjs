@@ -23,7 +23,7 @@ Program
   = Comment* Body? Ws* (Ws+ Comment*)?
 
 Body
-  = ('begin' Ws+ (Function/Comment)* Statement Ws+ 'end')
+  = ('begin' Ws+ (Function/Comment)* Statement Ws* 'end')
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -35,7 +35,10 @@ Body
    which encapsulate statements.
 */
 Function
-  = Type Ws+ Ident Ws* '(' Ws* ParamList? Ws* ')' Ws+ 'is' Ws+ Statement Ws+ 'end'
+  = Type Ws+ Ident Ws* TypeSignature Ws* 'is' Ws+ Statement Ws+ 'end' Ws*
+
+TypeSignature
+  = '(' Ws* ParamList? Ws* ')'
 
 /*
    Defines a list of parameter declarations with their respective types for
@@ -64,21 +67,22 @@ Statement
 
 StatementType
   = 'skip'
-  / ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
-  / Param Ws* '=' Ws* AssignRhs
-  / AssignLhs Ws* '=' Ws* AssignRhs
+  / 'println' Ws+ Expr
   / 'read' Ws+ AssignLhs
   / 'free' Ws+ Expr
   / 'return' Ws+ Expr
   / 'exit' Ws+ Expr
   / 'print' Ws+ Expr
-  / 'println' Ws+ Expr
   / 'if' Ws+ Expr Ws* 'then' Ws+ Statement Ws* 'else' Ws+ Statement Ws* 'fi'
   / 'while' Ws+ Expr Ws* 'do' Ws+ Statement Ws* 'done'
   / 'begin' Ws+ Statement Ws+ 'end'
+  / ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
+  / Param Ws* '=' Ws* AssignRhs
+  / AssignLhs Ws* '=' Ws* AssignRhs
 
 StatementTail
-  = Ws* ';' Ws* Statement
+  = Ws* ';' Comment* Ws* Statement
+  / Ws* Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -98,11 +102,11 @@ AssignLhs
    of an assignment operator.
 */
 AssignRhs
-  = Expr
-  / ArrayLiteral
-  / 'newpair' Ws* '(' Ws* Expr Ws* ',' Ws* Expr Ws* ')' Ws+
+  = 'call' Ws+ Ident '(' Ws* ArgList? Ws* ')'
+  / 'newpair' Ws* '(' Ws* Expr Ws* ',' Ws* Expr Ws* ')' Ws*
   / PairElem
-  / 'call' Ws+ Ident '(' Ws* ArgList? Ws* ')'
+  / ArrayLiteral
+  / Expr
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function Invokation
@@ -138,12 +142,12 @@ BinOp
   / '%'
   / '+'
   / '-'
-  / '>'
   / '>='
-  / '<'
+  / '>'
   / '<='
+  / '<'
   / '=='
-  / '!-'
+  / '!='
   / '&&'
   / '||'
 
@@ -156,8 +160,8 @@ BinOp
 */
 Type
   = ArrayType
-  / BaseType
   / PairType
+  / BaseType
 
 /*
    The barest type classes for use in wacc.
@@ -180,13 +184,13 @@ Expr
 
 ExprType
   = '(' Ws* Expr Ws* ')'
-  / ArrayElem
-  / PairLiteral
-  / IntLiteral
-  / BoolLiteral
   / CharLiteral
   / StrLiteral
-  / UnaryOp Ws+ Expr
+  / ArrayElem
+  / PairLiteral
+  / UnaryOp Ws* Expr
+  / IntLiteral
+  / BoolLiteral
   / Ident
 
 ExprTail
@@ -250,7 +254,7 @@ PairElemType
    or underscores.
 */
 Ident
-  = !ReservedWord [_a-zA-Z] [_a-zA-Z0-9]*
+  = [_a-zA-Z] [_a-zA-Z0-9]*
 
 /*
    Defines all the reserved words of the language, including keywords
@@ -314,7 +318,7 @@ BoolLiteral
    that it is a character surrounded by single quotes.
 */
 CharLiteral
-  = "'" Character "'"
+  = "'" Character  "'"
 
 /*
    Very much similar to the character pattern but with double quotations
@@ -328,7 +332,7 @@ StrLiteral
    escaping characters with a backslash.
 */
 Character
-  = [^(\\\'\")]
+  = [^\\\'\"]
   / '\\' EscapedChar
 
 /*

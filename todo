@@ -1,22 +1,22 @@
 
 L(awrence)  O(ctavian)  A(lan)  S(ean)
 
-[ ]  L  ├── advanced
+[X]  L  ├── advanced
 [X]  L  ├── array
-[ ]  L  ├── assignment
+[X]  L  ├── assignment
 [X]  L  ├── basic
-[ ]  L  ├── declaration
+[X]  L  ├── declaration
 
 
-[ ]  O  ├── exit
-[ ]  O  ├── expressions
-[ ]  O  ├── function
-[ ]  O  ├── if
+[X]  L  ├── exit
+[X]  L  ├── expressions
+[X]  L  ├── function
+[X]  L  ├── if
 
 
-[ ]  A  ├── pairs
+[X]  A  ├── pairs
 [ ]  A  ├── print
-[ ]  A  ├── read
+[ ]  S  ├── read
 
 
 [ ]  L  ├── runtimeErr
@@ -27,5 +27,5 @@ L(awrence)  O(ctavian)  A(lan)  S(ean)
 
  
 [ ]  S  ├── scope
-[ ]  S  ├── sequence
-[ ]  S  └── while
+[ ]  O  ├── sequence
+[ ]  O  └── while
