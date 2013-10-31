@@ -8,24 +8,57 @@
 #       to generate a node object for the symbol table.
 ###############################################################################
 
-Nodes : [
+Nodes
   BinOps: [
-    AssignOp: [
-      ['assignee', 'expr']
+    AssignOps: [
+      AssignEqOp: null
+    ]
+    ArithmeticOps: [
+      MulOp: null
+      DivOp: null
+      ModOp: null
+      AddOp: null
+      SubOp: null
+    ]
+    ComparisonOps: [
+      LessOp: null
+      LessEqOp: null
+      GreaterOp: null
+      GreaterEqOp: null
     ]
   ]
+
   UnaryOps: [
+    SignOps: [
+      NegOp: null
+    ]
+    BuiltinOps: [
+      LenOp: null
+      OrdOp: null
+      ToIntOp: null
+    ]
+    NotOp: null
   ]
+
   Statements: [
+    Skip: null
+    Print: null
+    Println: null
+    Read: null
+    Free: null
+    Return: null
+    Exit: null
   ]
+
   FunctionApplications: [
   ]
+
   Program: [
   ]
-  Conditional: [
-  ]
-  While: [
-  ]
-  For: [
-  ]
-]
+
+  Conditional: null
+
+  While: null
+
+  For: null
+

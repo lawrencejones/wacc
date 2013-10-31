@@ -68,17 +68,23 @@ Statement
 StatementType
   = 'skip'
   / 'println' Ws+ Expr
+  / 'print' Ws+ Expr
   / 'read' Ws+ AssignLhs
   / 'free' Ws+ Expr
   / 'return' Ws+ Expr
   / 'exit' Ws+ Expr
-  / 'print' Ws+ Expr
-  / 'if' Ws+ Expr Ws* 'then' Ws+ Statement Ws* 'else' Ws+ Statement Ws* 'fi'
-  / 'while' Ws+ Expr Ws* 'do' Ws+ Statement Ws* 'done'
-  / 'begin' Ws+ Statement Ws+ 'end'
-  / ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
+  / Conditional / While / Body / Assignment
+
+Assignment
+  = ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
   / Param Ws* '=' Ws* AssignRhs
   / AssignLhs Ws* '=' Ws* AssignRhs
+
+Conditional
+  = 'if' Ws+ Expr Ws* 'then' Ws+ Statement Ws* 'else' Ws+ Statement Ws* 'fi'
+
+While
+  = 'while' Ws+ Expr Ws* 'do' Ws+ Statement Ws* 'done'
 
 StatementTail
   = Ws* ';' Comment* Ws* Statement
@@ -126,23 +132,33 @@ ArgList
 /*
    Defines all unary operators.
 */
-UnaryOp
+UnaryOp = (NotOp / SignOp / Builtin) 
+
+NotOp
   = '!'
-  / '-'
-  / 'len'
+
+SignOp
+  = '-'
+
+Builtin
+  = 'len'
   / 'ord'
   / 'toInt'
 
 /*
    Defines all binary operators.
 */
-BinOp
+BinOp = (ArithmeticOp/ComparisonOp)
+
+ArithmeticOp
   = '*'
   / '/'
   / '%'
   / '+'
   / '-'
-  / '>='
+
+ComparisonOp
+  = '>='
   / '>'
   / '<='
   / '<'
