@@ -14,18 +14,18 @@ L(awrence)  O(ctavian)  A(lan)  S(ean)
 [X]  L  ├── if
 
 
-[X]  A  ├── pairs
-[X]  A  ├── print
-[ ]  S  ├── read
+[X]  L  ├── pairs
+[X]  L  ├── print
+[X]  L  ├── read
 
 
-[ ]  L  ├── runtimeErr
-[ ]     │     ├── arrayOutOfBounds
-[ ]     │     ├── divideByZero
-[ ]     │     ├── integerOverflow
-[ ]     │     └── nullDereference
+        ├── runtimeErr
+[X]  L  │     ├── arrayOutOfBounds
+[X]  L  │     ├── divideByZero
+[X]  L  │     ├── integerOverflow
+[X]  L  │     └── nullDereference
 
  
-[ ]  S  ├── scope
-[ ]  O  ├── sequence
-[ ]  O  └── while
+[X]  L  ├── scope
+[X]  L  ├── sequence
+[X]  L  └── while
