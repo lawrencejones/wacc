@@ -15,10 +15,10 @@ parser = require './parser'
 # Function to generate syntax error string
 syntaxError = (e, src, filename) ->
   mssg = new Array
-  mssg.push ">> Error in file '#{filename}'" if filename?
   mssg.push ">> #{e.message.replace(/"(.*?)"/ig, "\x1b[31m\"$1\"\x1b[0m")}"
   mssg.push "#{e.line}:#{e.column} - #{l = src.split('\n')[e.line - 1]}"
   mssg.push "#{(new Array(e.column + (mssg[1].length - l.length))).join(' ')}^"
+  mssg = [">> Error in file '#{filename}'"].concat mssg if filename?
   return mssg.join('\n')
 
 # Attempts to parse the source code in src
