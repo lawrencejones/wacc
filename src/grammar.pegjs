@@ -318,7 +318,8 @@ BoolLiteral
    that it is a character surrounded by single quotes.
 */
 CharLiteral
-  = "'" Character  "'"
+  = "#"
+  / "'" (Character/[#])  "'"
 
 /*
    Very much similar to the character pattern but with double quotations
@@ -385,6 +386,6 @@ EscapedChar
    Defines the different characters that may represent whitespace.
 */
 Ws
-  = [' '\t\r\n]
+  = [ \t\r\n]
 
 

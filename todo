@@ -15,7 +15,7 @@ L(awrence)  O(ctavian)  A(lan)  S(ean)
 
 
 [X]  A  ├── pairs
-[ ]  A  ├── print
+[X]  A  ├── print
 [ ]  S  ├── read
 
 
