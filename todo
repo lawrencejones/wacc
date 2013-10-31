@@ -2,7 +2,7 @@
 L(awrence)  O(ctavian)  A(lan)  S(ean)
 
 [ ]  L  ├── advanced
-[ ]  L  ├── array
+[X]  L  ├── array
 [ ]  L  ├── assignment
 [X]  L  ├── basic
 [ ]  L  ├── declaration

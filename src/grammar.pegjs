@@ -202,13 +202,13 @@ ExprTail
    TODO - Clarify that array types are only of base type
 */
 ArrayType
-  = BaseType '[' ']'
+  = BaseType ('[' ']')+
 
 /*
    Defines elements within wacc arrays.
 */
 ArrayElem
-  = Ident '[' Ws* Expr Ws* ']'
+  = Ident ('[' Ws* Expr Ws* ']')+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Pairs

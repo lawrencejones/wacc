@@ -50,14 +50,15 @@ if options['--recursive']
         console.error \
           "The given target '#{dir}' is not a directory."
         process.exit 1
-      else files.push fs.readdirSync(dir).map((f) -> "#{dir}/#{f}")
+      else files.push fs.readdirSync(dir).map (f) -> "#{dir}/#{f}"
     catch err
       if err.isInstanceOf ENOENT then console.error \
         "The given target '#{dir}' does not exist."
       process.exit 1
   # Flatten and sanitise the list of files, assign to targets
   targets = files.reduce ((a, b) ->
-    a.concat(b.map (f) -> f.replace(/\/\//g, '/'))), []
+    a.concat(b.filter (f) -> /.+\.wacc$/.test f)), []
+  targets.map (f) -> f.replace(/\/\//g, '/')
 
 
 # Verify that target source files have been supplied
