@@ -22,12 +22,12 @@ syntaxError = (e, src, filename) ->
   return mssg.join('\n')
 
 # Attempts to parse the source code in src
-parse = (src, filename) ->
+parse = (src, verbose, filename) ->
   try
     parser.parse(src)
   catch err
-    console.log syntaxError(err, src, filename)
+    console.log syntaxError(err, src, filename) if verbose
     throw err
 
 # Export the parse function
-module.exports = parse
+module.exports = [ parse, syntaxError ]

@@ -7,12 +7,13 @@
 #       as a single wacc object that will contain all functions, data etc.
 ###############################################################################
 
-syntaxParser = require './syntax'
+[syntaxParser, errorFormatter] = require './syntax'
 nodes = require './nodes'
 
 Wacc =
 
   Parser: syntaxParser
+  ErrorFormatter: errorFormatter
   SemanticAnalyser: null
   CodeGenerator: null
   Optimiser: null
@@ -20,8 +21,20 @@ Wacc =
   Nodes: nodes
   
   # Can throw a syntax error
-  parse: (src, filename) ->
-    @Parser(src, filename)
+  parse: (src, options) ->
+    options['verbose'] ?= true
+    options['returnMessage'] ?= false
+    @Parser(
+      src
+      options['verbose']
+      options['filename']
+    )
+
+  formatError: (err, src, options) ->
+    errorFormatter(
+      err, src
+      options['filename']
+    )
 
   analyse: (ast, options) ->
 

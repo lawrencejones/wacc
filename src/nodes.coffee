@@ -8,7 +8,7 @@
 #       to generate a node object for the symbol table.
 ###############################################################################
 
-Nodes
+Nodes =
   BinOps: [
     AssignOps: [
       AssignEqOp: null

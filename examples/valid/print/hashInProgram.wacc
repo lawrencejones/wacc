@@ -5,14 +5,11 @@
 
 #Program:#
 
-# begin 
-#   int x = 0 ; # comments can be in-line
-#   print "We can print the hash character: " ;
-#   println '#' ;
-#   println "We can also print # when its in a string."
-# end
-
-begin
-println '#'
+begin 
+  int x = 0 ; # comments can be in-line
+  print "We can print the hash character: " ;
+  println '#' ;
+  println "We can also print # when its in a string."
 end
+
 	
