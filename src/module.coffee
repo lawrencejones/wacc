@@ -23,11 +23,11 @@ Wacc =
   # Can throw a syntax error
   parse: (src, options) ->
     options['verbose'] ?= true
-    options['returnMessage'] ?= false
     @Parser(
       src
       options['verbose']
       options['filename']
+      options['returnMessage']
     )
 
   formatError: (err, src, options) ->

@@ -94,7 +94,11 @@ run = (err, filename, src, options) ->
   parse = (src, filename) ->
     try
       # Parse the given source
-      tree = wacc.parse(src, filename)
+      tree = wacc.parse src, {
+        verbose: true
+        returnMessage: false
+        filename: filename
+      }
     catch err
       # If error then exit
       console.error 'Terminating due to syntax error.'
@@ -136,7 +140,7 @@ run = (err, filename, src, options) ->
       # TODO - Implement binary execution
       console.log "Finished executing file '#{filename}'"
 
-  parse(src, filename)
+  parse src, filename
 
 # Begin loading files
 targets.map (t) ->

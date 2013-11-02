@@ -64,7 +64,7 @@ validSyntax = (file) ->
       returnMessage: true
     }
   catch err
-    return wacc.formatError(err, src, {filename: file})
+    return err.mssg
   return null
 
 # Checks for invalid syntax. If the parsing does not raise an error
@@ -93,8 +93,7 @@ printResults = ->
       failed.push res if res
     process.stdout.write '\n'
     if failed.length > 0
-      console.log ('\n' + mssg) for mssg in failed
-      console.log '\n'
+      console.log (('\n' + mssg) for mssg in failed).join '\n'
 
 testFiles 'valid', validSyntax, results.syntax.valid
 testFiles 'invalid', invalidSyntax, results.syntax.invalid, printResults

@@ -88,7 +88,7 @@ While
 
 StatementTail
   = Ws* ';' Comment* Ws* Statement
-  / Ws* Statement
+  / Ws* ';' Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
