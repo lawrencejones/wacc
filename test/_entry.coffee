@@ -68,8 +68,7 @@ validSyntax = (file) ->
   return null
 
 # Checks for invalid syntax. If the parsing does not raise an error
-# then will return false, else true. Makes a non null entry into
-# errors.syntax.invalid under the filename if doesn't detect error.
+# then will return false, else will return the filename
 invalidSyntax = (file) ->
   try
     src = fs.readFileSync(file, 'utf-8')
@@ -78,22 +77,39 @@ invalidSyntax = (file) ->
       returnMessage: false
     }
   catch err
-    return true
+    return file
   return false
 
 # Prints the formatted test results
 printResults = ->
-  console.log "\nTesting syntax on valid examples..."
-  for own cat,tests of results.syntax.valid
-    process.stdout.write "  Category '#{cat}'   "
-    failed = []
-    for own test,res of tests
-      [col,clr] = [res and '\x1b[31m' or '\x1b[32m', '\x1b[0m']
-      process.stdout.write "#{col}*#{clr}"
-      failed.push res if res
-    process.stdout.write '\n'
-    if failed.length > 0
-      console.log (('\n' + mssg) for mssg in failed).join '\n'
 
+  # Given a block of results, will iterate through them and using
+  # the supplied printFailed function, output appropriate error messages
+  # Pre is the predicate for a failed test
+  iterateTests = (block, pre, printFailed) ->
+    for own cat,tests of block
+      process.stdout.write "  Category '#{cat}'   "
+      failed = []
+      for own test,res of tests
+        [col,clr] = [(pre res) and '\x1b[31m' or '\x1b[32m', '\x1b[0m']
+        process.stdout.write "#{col}*#{clr}"
+        failed.push res if (pre res)
+      process.stdout.write '\n'
+      printFailed(failed) if failed.length > 0
+  
+  # Valid syntax
+  console.log "\nTesting syntax for valid examples..."
+  iterateTests results.syntax.valid, ((t) -> t), (failed) ->
+    console.log (('\n' + mssg) for mssg in failed).join '\n'
+
+  # Invalid syntax
+  console.log "\nTesting syntax for invalid examples..."
+  iterateTests results.syntax.invalid, ((t) -> typeof(t) == 'string'), (failed) ->
+    console.log '\x1b[31m'
+    console.log "\n#{('      ' + f.split('/').pop() for f in failed).join('\n')}\n"
+    console.log '\x1b[0m'
+
+
+# Hooks for the different tests
 testFiles 'valid', validSyntax, results.syntax.valid
 testFiles 'invalid', invalidSyntax, results.syntax.invalid, printResults
