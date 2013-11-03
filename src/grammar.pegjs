@@ -6,10 +6,6 @@
 // Desc: pegjs file that describes the syntax for the WACC language.
 ///////////////////////////////////////////////////////////////////////////////
 
-/* Dummy target for production of final parsed script*/
-main
-  = program:Program
-
 ///////////////////////////////////////////////////////////////////////////////
 // Lexical Grammer
 ///////////////////////////////////////////////////////////////////////////////
@@ -19,11 +15,14 @@ main
    `begin` and `end` which contain a final statement to be returned and
    zero or more functions.
 */
-Program
-  = Comment* Body? Ws* (Ws+ Comment*)?
+Start
+  = Comment* ProgramBlock? Ws* (Ws+ Comment*)?
 
-Body
-  = ('begin' Ws+ (Function/Comment)* Statement Ws* 'end')
+ProgramBlock
+  = ('begin' Ws+ ProgramBody Ws* 'end')
+
+ProgramBody
+  = (Function/Comment)* Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -35,7 +34,13 @@ Body
    which encapsulate statements.
 */
 Function
-  = Type Ws+ Ident Ws* TypeSignature Ws* 'is' Ws+ Statement Ws+ 'end' Ws*
+  = FunctionDeclaration (Ws* 'is' Ws+) FunctionBody Ws+ 'end' Ws*
+
+FunctionBody
+  = (Statement Ws* ';' Ws*)? FinalStatement
+
+FunctionDeclaration
+  = Type Ws+ Ident Ws* TypeSignature
 
 TypeSignature
   = '(' Ws* ParamList? Ws* ')'
@@ -63,7 +68,8 @@ Param
    type to avoid left recursive issues.
 */
 Statement
-  = StatementType StatementTail?
+  = FinalStatement
+  / StatementType StatementTail?
 
 StatementType
   = 'skip'
@@ -71,9 +77,14 @@ StatementType
   / 'print' Ws+ Expr
   / 'read' Ws+ AssignLhs
   / 'free' Ws+ Expr
-  / 'return' Ws+ Expr
+  / Scope / Conditional / While / Assignment
+
+Scope
+  = 'begin' Ws+ Statement* Ws* 'end'
+
+FinalStatement
+  = 'return' Ws+ Expr
   / 'exit' Ws+ Expr
-  / Conditional / While / Body / Assignment
 
 Assignment
   = ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
@@ -88,7 +99,6 @@ While
 
 StatementTail
   = Ws* ';' Comment* Ws* Statement
-  / Ws* ';' Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment
@@ -312,7 +322,7 @@ ReservedWord
    to be interpreted by wacc as decimal integers.
 */
 IntLiteral
-  = IntSign? Digit+
+  = IntSign? digits:Digit+
 
 /*
    Defines the integer signage for positive or negative notation.

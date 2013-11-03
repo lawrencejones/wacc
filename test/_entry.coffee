@@ -68,7 +68,6 @@ validSyntax = (file) ->
     wacc.parse src, {
       verbose: false
       filename: file
-      returnMessage: true
     }
   catch err
     noOfFailed++
@@ -129,7 +128,7 @@ testExamples = (callback) =>
   # Hooks for the different tests
   callback ?= printResults
   testFiles 'valid', validSyntax, results.syntax.valid, ->
-    testFiles 'invalid', invalidSyntax, results.syntax.invalid, callback
+    testFiles 'invalid/syntaxErr', invalidSyntax, results.syntax.invalid, callback
 
 
 # Hook for the growl communication
