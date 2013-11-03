@@ -5,22 +5,29 @@
 # File: _entry.coffee
 # Desc: The entry point for the wacc testsuite.
 # TODO: Build for asynchronous if have time
+# TODO: Find more elegant solution to the globally scoped results
 ###############################################################################
 
 fs = require 'fs'
+exec = require('child_process').exec
 wacc = require '../lib/module'
 
-results = {
+# Put results in global scope
+results = {}
+# Hold number of request to run callback
+count = 0
+# Hold number of failed tests
+noOfFailed = 0
+
+# Resets the test results
+templateResults = ->
   syntax:
     valid: {}
     invalid: {}
   semantic:
     valid: {}
     invalid: {}
-}
 
-# Hold number of request to run callback
-count = 0
 
 # Takes a directory from **within** the examples folder
 testFiles = (dir, test, res, cb) ->
@@ -64,8 +71,10 @@ validSyntax = (file) ->
       returnMessage: true
     }
   catch err
+    noOfFailed++
     return err.mssg
   return null
+
 
 # Checks for invalid syntax. If the parsing does not raise an error
 # then will return false, else will return the filename
@@ -77,8 +86,10 @@ invalidSyntax = (file) ->
       returnMessage: false
     }
   catch err
-    return file
-  return false
+    return false
+  noOfFailed++
+  return file
+
 
 # Prints the formatted test results
 printResults = ->
@@ -110,6 +121,54 @@ printResults = ->
     console.log '\x1b[0m'
 
 
-# Hooks for the different tests
-testFiles 'valid', validSyntax, results.syntax.valid
-testFiles 'invalid', invalidSyntax, results.syntax.invalid, printResults
+# Runs tests using the given wacc spec examples
+# Returns number of failed test cases
+testExamples = (callback) =>
+  results = templateResults()
+  [count, noOfFailed] = [0,0]
+  # Hooks for the different tests
+  callback ?= printResults
+  testFiles 'valid', validSyntax, results.syntax.valid, ->
+    testFiles 'invalid', invalidSyntax, results.syntax.invalid, callback
+
+
+# Hook for the growl communication
+# Mac OS X supported via growlnotify
+growl = (mssg, positive, sticky) ->
+  cmd = "growlnotify --image ./images"
+  if not positive
+    cmd = "#{cmd}/failed.png"
+  else cmd = "#{cmd}/success.png"
+  cmd = "#{cmd} -s" if sticky
+  exec "#{cmd} -m \"#{mssg}\""
+
+
+# For watching and rerunning test suite
+makeAndRun = ->
+  exec "make all", (err, stdout, stderr) ->
+    time = (new Date()).toTimeString().split(' ')[0]
+    if stderr.split('\n').length > 3
+      console.error "#{time} - Compilation failed! Not running tests."
+      growl 'Make Failed!', false, true   # make sticky
+    else
+      testExamples ->
+        if noOfFailed != 0
+          console.error "#{time} - Tests produced #{noOfFailed} errors."
+          growl "Failed #{noOfFailed} test cases!"
+        else
+          console.log "#{time} - Tests all passed."
+          growl 'Tests passed!', true
+
+
+# Extract watch argument
+[watch, addr...] = process.argv[2..]
+# If not being run to watch, then execute tests
+if not watch then testExamples()
+else
+  makeScheduled = false
+  fs.watch 'src', {persistent: true}, (event, filename) =>
+    makeScheduled = true
+    setTimeout (-> if makeScheduled
+      makeScheduled = false
+      makeAndRun()), 2000
+    

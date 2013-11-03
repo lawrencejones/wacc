@@ -12,7 +12,7 @@ TEST_DIR := test
 SRC := $(wildcard $(SRC_DIR)/*.coffee | sort)
 LIB := $(SRC:$(SRC_DIR)/%.coffee=$(LIB_DIR)/%.js) lib/parser.js
 
-.PHONY: all clean rebuild test
+.PHONY: all clean rebuild test watch
 
 # Phony all target
 all: $(LIB)
@@ -22,6 +22,11 @@ all: $(LIB)
 test: all
 	@-echo "Running testsuite."
 	@-$(COFFEE) $(TEST_DIR)/_entry.coffee
+
+# Watch for source changes and run tests
+watch: all
+	@-echo "Now watching src directory for changes."
+	@-$(COFFEE) $(TEST_DIR)/_entry.coffee watch
 
 # Phony clean target
 clean:

@@ -23,13 +23,9 @@ Wacc =
   # Can throw a syntax error
   parse: (src, options) ->
     options['verbose'] ?= true
-    @Parser(
-      src
-      options['verbose']
-      options['filename']
-      options['returnMessage']
-    )
+    @Parser src, options
 
+  # TODO - evaluate if this is really necessary
   formatError: (err, src, options) ->
     errorFormatter(
       err, src

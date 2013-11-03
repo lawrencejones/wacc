@@ -9,7 +9,6 @@
 #       attempt a parse. Any syntax errors are printed to stderr.
 ###############################################################################
 
-fs = require 'fs'
 parser = require './parser'
 
 # Function to generate syntax error string
@@ -22,12 +21,12 @@ syntaxError = (e, src, filename) ->
   return mssg.join('\n')
 
 # Attempts to parse the source code in src
-parse = (src, verbose, filename) ->
+parse = (src, opt) ->
   try
     parser.parse(src)
   catch err
-    mssg = syntaxError(err, src, filename)
-    console.log mssg if verbose
+    mssg = syntaxError(err, src, opt['filename'])
+    console.log mssg if opt['verbose']
     err.mssg = mssg
     throw err
 
