@@ -37,7 +37,7 @@ Function
   = FunctionDeclaration (Ws* 'is' Ws+) FunctionBody Ws+ 'end' Ws*
 
 FunctionBody
-  = (Statement Ws* ';' Ws*)? FinalStatement
+  = ReturnStatement
 
 FunctionDeclaration
   = Type Ws+ Ident Ws* TypeSignature
@@ -68,8 +68,7 @@ Param
    type to avoid left recursive issues.
 */
 Statement
-  = FinalStatement
-  / StatementType StatementTail?
+  = StatementType StatementTail?
 
 StatementType
   = 'skip'
@@ -77,14 +76,14 @@ StatementType
   / 'print' Ws+ Expr
   / 'read' Ws+ AssignLhs
   / 'free' Ws+ Expr
+  / 'exit' Ws+ Expr
   / Scope / Conditional / While / Assignment
 
 Scope
   = 'begin' Ws+ Statement* Ws* 'end'
 
-FinalStatement
-  = 'return' Ws+ Expr
-  / 'exit' Ws+ Expr
+ReturnStatement
+  = (Statement Ws* ';' Ws+)? 'return' Ws+ Expr
 
 Assignment
   = ArrayType Ws+ Ident Ws* '=' Ws* ArrayLiteral
@@ -92,7 +91,11 @@ Assignment
   / AssignLhs Ws* '=' Ws* AssignRhs
 
 Conditional
-  = 'if' Ws+ Expr Ws* 'then' Ws+ Statement Ws* 'else' Ws+ Statement Ws* 'fi'
+  = 'if' Ws+ Expr Ws* 'then' Ws+ IfBody Ws* 'else' Ws+ IfBody Ws* 'fi'
+
+IfBody
+  = Statement
+  / ReturnStatement
 
 While
   = 'while' Ws+ Expr Ws* 'do' Ws+ Statement Ws* 'done'
@@ -214,8 +217,8 @@ ExprType
   / StrLiteral
   / ArrayElem
   / PairLiteral
-  / UnaryOp Ws* Expr
   / IntLiteral
+  / UnaryOp Ws* Expr
   / BoolLiteral
   / Ident
 
@@ -322,7 +325,13 @@ ReservedWord
    to be interpreted by wacc as decimal integers.
 */
 IntLiteral
-  = IntSign? digits:Digit+
+  = sign:IntSign? digits:Digit+{
+  var a = parseInt(digits.join(''),10);
+  if (sign == '-') a = -a;
+  if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
+    throw new SyntaxError();
+  else return a;
+}
 
 /*
    Defines the integer signage for positive or negative notation.

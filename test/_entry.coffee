@@ -70,8 +70,10 @@ validSyntax = (file) ->
       filename: file
     }
   catch err
-    noOfFailed++
-    return err.mssg
+    if err.mssg?
+      noOfFailed++
+      return err.mssg
+    else throw err
   return null
 
 
@@ -169,5 +171,5 @@ else
     makeScheduled = true
     setTimeout (-> if makeScheduled
       makeScheduled = false
-      makeAndRun()), 2000
+      makeAndRun()), 3000
     
