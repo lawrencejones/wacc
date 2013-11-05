@@ -14,6 +14,7 @@ module?.exports =
       int:    Nodes.IntLiteral
       bool:   Nodes.BoolLiteral
       array:  Nodes.ArrayLiteral
+      pair:   Nodes.PairLiteral
     
     new literalLookup[key]  value
   

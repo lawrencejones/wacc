@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // WACC Compiler Group 27
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-// Author: lmj112
+// Author: lmj112 amv12 skd212 ot612
 // File: grammer.pegjs
 // Desc: pegjs file that describes the syntax for the WACC language.
 ///////////////////////////////////////////////////////////////////////////////
@@ -9,7 +9,6 @@
 {
   var Nodes = require('./nodes'),
       Helpers = require('./nodeHelpers');
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,7 +21,10 @@
    zero or more functions.
 */
 Start
-  = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{ return main; }
+  = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{ 
+      if (main == '') return {};
+      return main;
+}
 
 ProgramBlock
   = ('begin' Ws+ body:ProgramBody Ws* 'end'){ return body; }
@@ -49,7 +51,7 @@ FunctionBody
 
 FunctionDeclaration
   = t:Type Ws+ i:Ident Ws* ts:TypeSignature{
-    if (pl == '') pl = null;
+    if (ts == '') ts = null;
     return {'ident': i, 'type':t, 'typeSignature':ts};
   }
 
@@ -133,8 +135,10 @@ Conditional
   }
 
 IfBody
-  = Statement
-  / ReturnStatement
+  = ss:(Statement / ReturnStatement)?{
+    if (ss = '') ss = {};
+    return ss;
+}
 
 While
   = 'while' Ws+ cond:Expr Ws* 'do' Ws+ body:Statement Ws* 'done'{
@@ -269,7 +273,8 @@ ExprType
   = '(' Ws* e:Expr Ws* ')'{
     return e;
   }
-  / lit:(CharLiteral / StrLiteral / ArrayElem / PairLiteral / IntLiteral / BoolLiteral){
+  / ArrayElem
+  / lit:(CharLiteral / StrLiteral / PairLiteral / IntLiteral / BoolLiteral){
     return Helpers.constructLiteral(Nodes, lit[0], lit[1]);
   }
   / op:UnaryOp Ws* value:Expr{
@@ -288,13 +293,17 @@ ExprType
    TODO - Clarify that array types are only of base type
 */
 ArrayType
-  = BaseType ('[' ']')+
+  = t:BaseType bs:('[' ']')+{
+    return { 'type': t, 'depth': bs.length };
+  }
 
 /*
    Defines elements within wacc arrays.
 */
 ArrayElem
-  = Ident ('[' Ws* Expr Ws* ']')+
+  = i:Ident accessors:('[' Ws* Expr Ws* ']')+{
+    return new Nodes.ArrayElem(i, accessors);
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Pairs
@@ -304,18 +313,21 @@ ArrayElem
    Defines the declaration behaviour for use of typed pairs.
 */
 PairType
-  = 'pair' '(' Ws* PairElemType Ws* ',' Ws* PairElemType Ws* ')'
+  = 'pair' '(' Ws* t1:PairElemType Ws* ',' Ws* t2:PairElemType Ws* ')'{
+    return [t1,t2];
+  }
 
 /*
    Defines what is possible for an element of a pair.
    TODO - lookup exact usage.
 */
 PairElem
-  = PairAccessor Ws+ Expr
+  = a:PairAccessor Ws+ e:Expr{
+    return new Nodes.PairAccessor({'value': e, 'selector': a}); 
+  }
 
 PairAccessor
-  = 'fst'
-  / 'snd'
+  = 'fst' / 'snd'
 
 /*
    Covers what variable types may be used inside a wacc pair.
@@ -398,8 +410,8 @@ IntSign
 */
 BoolLiteral
   = bool:('true' / 'false'){
-  return ['bool', bool == 'true'];
-}
+    return ['bool', bool == 'true'];
+  }
 
 /*
    Describes the literal representation of a character, specifically
@@ -407,8 +419,8 @@ BoolLiteral
 */
 CharLiteral
   = c:("#"/ "'" (Character/[#]) "'"){
-  return ['char', c];
-}
+    return ['char', c];
+  }
 
 /*
    Very much similar to the character pattern but with double quotations
@@ -416,8 +428,8 @@ CharLiteral
 */
 StrLiteral
   = '"' chars:Character* '"'{
-  return ['string', chars.join('')];
-}
+    return ['string', chars.join('')];
+  }
 
 /*
    Defines the options for a character. Includes the possibility of
@@ -432,14 +444,27 @@ Character
    by commas and represented by an expression token.
 */
 ArrayLiteral
-  = '[' Ws* (Expr ( Ws* ',' Ws* Expr)*)* Ws* ']'
+  = '[' Ws* elems:ArrayLiteralList? Ws* ']'{
+    return new Nodes.ArrayLiteral(elems);
+  }
+
+ArrayLiteralList
+  = e:Expr es:ArrayLiteralListTail?{
+    return [e].concat(es);
+  }
+
+ArrayLiteralListTail
+  = Ws* ',' Ws* e:Expr es:ArrayLiteralListTail?{
+    if (es = '') return e;
+    return [e].concat(es);
+  }
 
 /*
    Pairs are actually pointers, and so the literal representation is
    the null value. New pairs are created via the `newpair` call.
 */
 PairLiteral
-  = 'null'
+  = 'null'{ return ['pair', null]; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fundamentals

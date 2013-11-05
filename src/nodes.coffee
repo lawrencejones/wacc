@@ -1,7 +1,7 @@
 ###############################################################################
 # WACC Compiler Group 27
 # ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-# Author: lmj112
+# Author: lmj112 amv12 skd212 ot612
 # File: nodes.coffee
 # Desc: See below.
 ###############################################################################
@@ -20,7 +20,7 @@
     
     Category: [
       [ objProperties... ]
-      [ postConstructionPredicate... ]
+      [ dependencies... ]
       nestedCategories : Category...
       finalPrototype : [ [ extraPredicates... ] ]
     ]
@@ -31,7 +31,8 @@
 
   The second array within a category shall contain a list of strings
   that represent the functions to call on finalising the construction
-  of a node. These will raise semantic errors if any issues are found.
+  of a node. These will modify the class to include appropriate
+  functionality.
 
   A final prototype is denoted by a name (singular) and a null value
   or an array. The array will represent any supplementary predicates
@@ -134,6 +135,7 @@ createNodes
     Read: [['onlyString']]
     Free: null
     Return: null
+    PairAccessor: null
     Exit: null
   ]
 
@@ -183,6 +185,11 @@ createNodes
     IntLiteral: null
     BoolLiteral: null
     CharLiteral: null
-    ArrayElem: null
+    PairLiteral: null
+    DepthLiterals: [
+      ['dimension'], []
+      ArrayElem: [['validAccess']]
+      ArrayLiteral: [['homogenousTypes']]
+    ]
   ]
 
