@@ -273,7 +273,7 @@ ExprType
   = '(' Ws* e:Expr Ws* ')'{
     return e;
   }
-  / ArrayElem
+  / ArrayElem / PairElem
   / lit:(CharLiteral / StrLiteral / PairLiteral / IntLiteral / BoolLiteral){
     return Helpers.constructLiteral(Nodes, lit[0], lit[1]);
   }
