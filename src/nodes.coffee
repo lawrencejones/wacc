@@ -76,32 +76,53 @@ Nodes =
       ]
       BuiltinOps: [
         [], []
-        LenOp: null
-        OrdOp: null
-        ToIntOp: null
+        LenOp: ['onlyArrays']
+        OrdOp: ['onlyInts']
+        ToIntOp: ['onlyChars']
       ]
-      NotOp: null
+      NotOp: ['onlyBools']
     ]
   
     Statements: [
+      ['operand'], []
       Skip: null
       Print: null
       Println: null
-      Read: null
+      Read: ['onlyString']
       Free: null
       Return: null
       Exit: null
     ]
   
     FunctionApplications: [
+      ['label', 'params'], ['validParams']
+      FunctionApplication: null
     ]
   
-    Program: [
+    Scopes: [
+      ['symbolTable'], []
+      Programs: [
+        ['functions', 'statement'], []
+        Program: null
+      ]
+      FlowConstructs: [
+        ['condition', 'body'], ['validCondition']
+        Conditional: null
+        While: null
+      ]
     ]
-  
-    Conditional: null
-  
-    While: null
-  
-    For: null
-  
+
+    Symbols: [
+      ['label', 'value'], ['validScope']
+    ]
+
+    # TODO - Implement pairs
+    Literals: [
+      ['value'], []
+      StringLiteral: null
+      IntLiteral: null
+      BoolLiteral: null
+      CharLiteral: null
+      ArrayElem: null
+    ]
+    
