@@ -8,6 +8,9 @@
 ###############################################################################
 
 fs = require 'fs'
+# Support lab machines, please upgrade your node!
+if not fs.existsSync?
+  fs.existsSync = require('path').existsSync
 wacc = require './module'
 
 # List of command line options for wacc
