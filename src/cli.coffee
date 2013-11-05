@@ -26,7 +26,7 @@ legalOptions = [].concat (["-#{k}",v] for own k,v of optAliases)...
 optAliases[v] = v for k,v of optAliases
 optAliases["-#{k}"] = v for k,v of optAliases
 # Set up max and min number of targets after options
-[targetMin, targetMax] = [1, 20]
+[targetMin, targetMax] = [1, 40]
 
 # Split argv into valid invalid and targets
 argv = process.argv[2..]
@@ -105,6 +105,7 @@ run = (err, filename, src, options) ->
         console.log()
     catch err
       # If error then exit
+      console.log err
       console.error 'Terminating due to syntax error.'
       process.exit 1
     generateCode(tree, 'Code Generation')

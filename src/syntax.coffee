@@ -21,11 +21,10 @@ syntaxError = (e, src, filename) ->
   return mssg.join('\n')
 
 # Attempts to parse the source code in src
-parse = (src, opt) ->
+parse = (src, opt = {}) ->
   try
     parser.parse(src)
   catch err
-    console.log err
     mssg = syntaxError(err, src, opt['filename'])
     console.log mssg if opt['verbose']
     err.mssg = mssg

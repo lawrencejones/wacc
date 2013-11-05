@@ -10,23 +10,22 @@
 [syntaxParser, errorFormatter] = require './syntax'
 nodes = require './nodes'
 
-Wacc =
+module.exports =
 
   Parser: syntaxParser
   ErrorFormatter: errorFormatter
-  SemanticAnalyser: null
   CodeGenerator: null
   Optimiser: null
   Compiler: null
   Nodes: nodes
   
   # Can throw a syntax error
-  parse: (src, options) ->
+  parse: (src, options = {}) ->
     options['verbose'] ?= true
     @Parser src, options
 
   # TODO - evaluate if this is really necessary
-  formatError: (err, src, options) ->
+  formatError: (err, src, options = {}) ->
     errorFormatter(
       err, src
       options['filename']
@@ -41,5 +40,3 @@ Wacc =
   generateMachine: (code, options) ->
 
 
-# Export the Wacc object
-module.exports = Wacc

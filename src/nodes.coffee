@@ -40,33 +40,31 @@
 
 module.exports ?= {}
 
-createNodes = (template, parent = ->) ->
+createNodes = (template, parent = (@params = [], @deps = []) ->) ->
 
   # For the className and the following specs of the child
   for own className,specs of template
     specs ?= [[]]
     obj = class extends parent
-      constructor: (parent, params...) ->
-        this.__proto__ = parent
-        @params ?= []
-        @hooks ?= []
+      constructor: (params...) ->
+        f.call?(this) for f in @deps
+        f.call?(this) for f in @pres ? []
         this.populate(params...) if params?
         this
       populate: ->
         this[k] = arguments[i] for k, i in @params
-        f.call?(this) for f in @hooks
+        f.call?(this) for f in @posts ? []
         this
-
       @className = className
     # If a category
     if specs.length > 1
-      [ps, hks, subclasses] = specs
+      [ps, deps, subclasses] = specs
       obj::params = (obj?.__super__?.params ? []).concat ps
-      obj::hooks = (obj?.__super__?.hooks ? []).concat hks
+      obj::deps = (obj?.__super__?.deps ? []).concat deps
       createNodes subclasses, obj
     # If a final node
     else
-      obj::hooks = (obj?.__super__?.hooks ? []).concat specs[0]
+      obj::deps = (obj?.__super__?.deps ? []).concat specs[0]
       module.exports[className] = obj
 
   return module.exports
@@ -92,13 +90,25 @@ createNodes
       AddOp: null
       SubOp: null
     ]
-    ComparisonOps: [
-      [], ['onlyInts']
-      LessOp: null
-      LessEqOp: null
-      GreaterOp: null
-      GreaterEqOp: null
+    BooleanOps: [
+      [], ['onlyBools']
+      AndOp: null
+      OrOp: null
     ]
+    ComparisonOps: [
+      [], []
+      EqOp: null
+      NotEqOp: null
+      NumericComparisons: [
+        [], ['onlyInts']
+        LessOp: null
+        LessEqOp: null
+        GreaterOp: null
+        GreaterEqOp: null
+      ]
+    ]
+    Statement: null
+    Expression: null
   ]
 
   UnaryOps: [
@@ -133,21 +143,37 @@ createNodes
   ]
 
   Scopes: [
-    ['symbolTable'], []
+    [], ['symbolTable']
+    NestedScopes: [
+      ['statement'], []
+      Scope: null
+      Functions: [
+        ['ident', 'type', 'typeSignature'], ['validScope']
+        Function: null
+      ]
+    ]
     Programs: [
       ['functions', 'statement'], []
       Program: null
     ]
     FlowConstructs: [
       ['condition', 'body'], ['validCondition']
-      Conditional: null
+      Conditionals: [
+        ['elseBody'], []
+        Conditional: null
+      ]
       While: null
     ]
   ]
 
   Symbols: [
-    ['label', 'value'], ['validScope']
+    ['label'], ['validScope']
     Ident: null
+    TypedSymbols: [
+      ['type'], []
+      Declaration: null
+      Param: null
+    ]
   ]
 
   # TODO - Implement pairs
