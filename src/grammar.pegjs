@@ -22,7 +22,7 @@ ProgramBlock
   = ('begin' Ws+ ProgramBody Ws* 'end')
 
 ProgramBody
-  = (Function/Comment)* Statement
+  = fs:(Function/Comment)* ss:Statement
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -68,10 +68,18 @@ Param
    type to avoid left recursive issues.
 */
 Statement
-  = StatementType StatementTail?
+  = a:StatementType b:StatementTail?{
+  if (b) {
+    return a.concat(b);
+  } else {
+    return a;
+  }
+}
 
 StatementType
-  = 'skip'
+  = 'skip'{
+  return new wacc.nodes.SkipOp;
+}
   / 'println' Ws+ Expr
   / 'print' Ws+ Expr
   / 'read' Ws+ AssignLhs

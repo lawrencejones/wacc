@@ -10,89 +10,98 @@
   The object below on which createNodes is called contains information
   on how to create the classes for each possible node in the wacc language.
 
-  The createNodes function will traverse this object and produce a Class
+  The createNodes function will traverse this object and produce an object
   for each of the possible terminals/productions. Ideally, an abstract
   syntax tree that represents a wacc program will be produced using
-  instances of the below classes.
+  objects that inherit from the below structure.
 
   Any pluralised keys represent a category of nodes. Each key value pair
   is made of a class name and an array, inside which is stored...
     
     Category: [
-      [ leaves... ]
-      __subCategories__ : Category...
-      __terminals__ : null
+      [ objProperties... ]
+      [ postConstructionPredicate... ]
+      nestedCategories : Category...
+      finalPrototype : [ extraPredicates... ]
     ]
 
-  The first element in the array (leaves) holds the labels for use in
-  storing all terminal operands. For example, Binary operations that
-  are infix will take be represented by {A (Op) B}, and so label names
-  'left' and 'right' shall be used to reference A and B respectively.
-  These labels will be used to produce error messages and to access
-  the attached terminals once inside the tree.
+  Within a category, the first array shall contain a list of strings
+  which will be properties of all finalPrototypes within this category
+  or nested categories.
 
-  Creating the nodes is simply a process of traversing the tree and
-  recursively calling to allow for each class to have it's prototype
-  assigned to the owning key class. This means that all nodes inherit
-  the properties of their owning class and therefore should align
-  semantic interests against it's respective labels.
+  The second array within a category shall contain a list of strings
+  that represent the functions to call on finalising the construction
+  of a node. These will raise semantic errors if any issues are found.
+
+  A final prototype is denoted by a name (singular) and a null value
+  or an array. The array will represent any supplementary predicates
+  to be run on finishing construction of that specific node.
 ###
 
 Nodes =
 
-  # All infix operations
-  BinOps: [
-    ['left', 'right']
-    AssignOps: [
-      ['assignee', 'value']
-      AssignEqOp: null
+    # All infix operations
+    BinOps: [
+      ['left', 'right'] # Parameters that all in BinOps include
+      [] # Post condition checks
+      AssignOps: [
+        ['@assignee','@value'], ['typeEquality']
+        AssignEqOp: null
+      ]
+      ArithmeticOps: [
+        [], ['noOverflow', 'onlyInts']
+        DivZeroRisks: [
+          [], ['noDivZero']
+          DivOp: null
+          ModOp: null
+        ]
+        MulOp: null
+        AddOp: null
+        SubOp: null
+      ]
+      ComparisonOps: [
+        [], ['onlyInts']
+        LessOp: null
+        LessEqOp: null
+        GreaterOp: null
+        GreaterEqOp: null
+      ]
     ]
-    ArithmeticOps: [
-      MulOp: null
-      DivOp: null
-      ModOp: null
-      AddOp: null
-      SubOp: null
+  
+    UnaryOps: [
+      ['operand'], []
+      SignOps: [
+        [], ['onlyInts']
+        NegOp: null
+      ]
+      BuiltinOps: [
+        [], []
+        LenOp: null
+        OrdOp: null
+        ToIntOp: null
+      ]
+      NotOp: null
     ]
-    ComparisonOps: [
-      LessOp: null
-      LessEqOp: null
-      GreaterOp: null
-      GreaterEqOp: null
+  
+    Statements: [
+      Skip: null
+      Print: null
+      Println: null
+      Read: null
+      Free: null
+      Return: null
+      Exit: null
     ]
-  ]
-
-  UnaryOps: [
-    SignOps: [
-      NegOp: null
+  
+    FunctionApplications: [
     ]
-    BuiltinOps: [
-      LenOp: null
-      OrdOp: null
-      ToIntOp: null
+  
+    Program: [
     ]
-    NotOp: null
-  ]
-
-  Statements: [
-    Skip: null
-    Print: null
-    Println: null
-    Read: null
-    Free: null
-    Return: null
-    Exit: null
-  ]
-
-  FunctionApplications: [
-  ]
-
-  Program: [
-  ]
-
-  Conditional: null
-
-  While: null
-
-  For: null
-
+  
+    Conditional: null
+  
+    While: null
+  
+    For: null
+  
