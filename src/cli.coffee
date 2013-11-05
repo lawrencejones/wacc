@@ -105,9 +105,8 @@ run = (err, filename, src, options) ->
         console.log()
     catch err
       # If error then exit
-      console.log err
       console.error 'Terminating due to syntax error.'
-      process.exit 1
+      process.exit 100
     generateCode(tree, 'Code Generation')
 
   # Assembly code generation
