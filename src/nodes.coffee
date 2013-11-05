@@ -38,91 +38,121 @@
   to be run on finishing construction of that specific node.
 ###
 
-Nodes =
+module.exports ?= {}
 
-    # All infix operations
-    BinOps: [
-      ['left', 'right'] # Parameters that all in BinOps include
-      [] # Post condition checks
-      AssignOps: [
-        ['@assignee','@value'], ['typeEquality']
-        AssignEqOp: null
-      ]
-      ArithmeticOps: [
-        [], ['noOverflow', 'onlyInts']
-        DivZeroRisks: [
-          [], ['noDivZero']
-          DivOp: null
-          ModOp: null
-        ]
-        MulOp: null
-        AddOp: null
-        SubOp: null
-      ]
-      ComparisonOps: [
-        [], ['onlyInts']
-        LessOp: null
-        LessEqOp: null
-        GreaterOp: null
-        GreaterEqOp: null
-      ]
-    ]
-  
-    UnaryOps: [
-      ['operand'], []
-      SignOps: [
-        [], ['onlyInts']
-        NegOp: null
-      ]
-      BuiltinOps: [
-        [], []
-        LenOp: ['onlyArrays']
-        OrdOp: ['onlyInts']
-        ToIntOp: ['onlyChars']
-      ]
-      NotOp: ['onlyBools']
-    ]
-  
-    Statements: [
-      ['operand'], []
-      Skip: null
-      Print: null
-      Println: null
-      Read: ['onlyString']
-      Free: null
-      Return: null
-      Exit: null
-    ]
-  
-    FunctionApplications: [
-      ['label', 'params'], ['validParams']
-      FunctionApplication: null
-    ]
-  
-    Scopes: [
-      ['symbolTable'], []
-      Programs: [
-        ['functions', 'statement'], []
-        Program: null
-      ]
-      FlowConstructs: [
-        ['condition', 'body'], ['validCondition']
-        Conditional: null
-        While: null
-      ]
-    ]
+createNodes = (template, parent = ->) ->
 
-    Symbols: [
-      ['label', 'value'], ['validScope']
-    ]
+  # For the className and the following specs of the child
+  for own className,specs of template
+    specs ?= [[]]
+    obj = class extends parent
+      constructor: (parent) ->
+        this.__proto__ = parent
+        @params ?= []
+        @hooks ?= []
+      populate: ->
+        this[k] = arguments[i] for k, i in @params
+        f.call?(this) for f in @hooks
 
-    # TODO - Implement pairs
-    Literals: [
-      ['value'], []
-      StringLiteral: null
-      IntLiteral: null
-      BoolLiteral: null
-      CharLiteral: null
-      ArrayElem: null
+      @className = className
+    # If a category
+    if specs.length > 1
+      [ps, hks, subclasses] = specs
+      obj::params = (obj?.__super__?.params ? []).concat ps
+      obj::hooks = (obj?.__super__?.hooks ? []).concat hks
+      createNodes subclasses, obj
+    # If a final node
+    else
+      obj::hooks = (obj?.__super__?.hooks ? []).concat specs[0]
+      module.exports[className] = obj
+
+  return module.exports
+
+
+createNodes
+  # All infix operations
+  BinOps: [
+    ['left', 'right'] # Parameters that all in BinOps include
+    [] # Post condition checks
+    AssignOps: [
+      [], ['typeEquality']
+      AssignEqOp: null
     ]
-    
+    ArithmeticOps: [
+      [], ['noOverflow', 'onlyInts']
+      DivZeroRisks: [
+        [], ['noDivZero']
+        DivOp: null
+        ModOp: null
+      ]
+      MulOp: null
+      AddOp: null
+      SubOp: null
+    ]
+    ComparisonOps: [
+      [], ['onlyInts']
+      LessOp: null
+      LessEqOp: null
+      GreaterOp: null
+      GreaterEqOp: null
+    ]
+  ]
+
+  UnaryOps: [
+    ['operand'], []
+    SignOps: [
+      [], ['onlyInts']
+      NegOp: null
+    ]
+    BuiltinOps: [
+      [], []
+      LenOp: [['onlyArrays']]
+      OrdOp: [['onlyInts']]
+      ToIntOp: [['onlyChars']]
+    ]
+    NotOp: [['onlyBools']]
+  ]
+
+  Statements: [
+    ['operand'], []
+    Skip: null
+    Print: null
+    Println: null
+    Read: [['onlyString']]
+    Free: null
+    Return: null
+    Exit: null
+  ]
+
+  FunctionApplications: [
+    ['label', 'params'], ['validParams']
+    FunctionApplication: null
+  ]
+
+  Scopes: [
+    ['symbolTable'], []
+    Programs: [
+      ['functions', 'statement'], []
+      Program: null
+    ]
+    FlowConstructs: [
+      ['condition', 'body'], ['validCondition']
+      Conditional: null
+      While: null
+    ]
+  ]
+
+  Symbols: [
+    ['label', 'value'], ['validScope']
+  ]
+
+  # TODO - Implement pairs
+  Literals: [
+    ['value'], []
+    StringLiteral: null
+    IntLiteral: null
+    BoolLiteral: null
+    CharLiteral: null
+    ArrayElem: null
+  ]
+
