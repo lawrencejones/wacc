@@ -24,6 +24,7 @@ optAliases = {
 legalOptions = [].concat (["-#{k}",v] for own k,v of optAliases)...
 # Loop back aliases
 optAliases[v] = v for k,v of optAliases
+optAliases["-#{k}"] = v for k,v of optAliases
 # Set up max and min number of targets after options
 [targetMin, targetMax] = [1, 20]
 
@@ -95,11 +96,13 @@ run = (err, filename, src, options) ->
     try
       # Parse the given source
       tree = wacc.parse src, {
-        verbose: true
-        returnMessage: false
+        verbose: options['--verbose']
         filename: filename
       }
-      console.log JSON.stringify tree
+      if options['--print-tree']
+        console.log "Printing abstract syntax tree\n"
+        console.log tree
+        console.log()
     catch err
       # If error then exit
       console.error 'Terminating due to syntax error.'

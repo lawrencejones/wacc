@@ -87,9 +87,7 @@ Statement
 }
 
 StatementType
-  = 'skip'{
-  return new wacc.nodes.SkipOp;
-}
+  = 'skip'
   / 'println' Ws+ Expr
   / 'print' Ws+ Expr
   / 'read' Ws+ AssignLhs
@@ -412,7 +410,7 @@ PairLiteral
    characters, followed by the end of line (EOL) terminator.
 */
 Comment
-  = Ws* '#' [^\n\r]* [\n\r] Ws*{ return null; }
+  = Ws* '#' [^\n\r]* [\n\r] Ws*
 
 /*
    Description of a digit, limited to the numbers from 0 to 9.
@@ -431,6 +429,6 @@ EscapedChar
    Defines the different characters that may represent whitespace.
 */
 Ws
-  = [ \t\r\n]{ return null; }
+  = [ \t\r\n]
 
 
