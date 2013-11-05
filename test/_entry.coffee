@@ -10,7 +10,7 @@
 
 fs = require 'fs'
 exec = require('child_process').exec
-wacc = require '../lib/module'
+wacc = require '../src/module'
 
 # Put results in global scope
 results = {}

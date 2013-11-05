@@ -22,7 +22,7 @@
       [ objProperties... ]
       [ postConstructionPredicate... ]
       nestedCategories : Category...
-      finalPrototype : [ extraPredicates... ]
+      finalPrototype : [ [ extraPredicates... ] ]
     ]
 
   Within a category, the first array shall contain a list of strings
@@ -46,13 +46,16 @@ createNodes = (template, parent = ->) ->
   for own className,specs of template
     specs ?= [[]]
     obj = class extends parent
-      constructor: (parent) ->
+      constructor: (parent, params...) ->
         this.__proto__ = parent
         @params ?= []
         @hooks ?= []
+        this.populate(params...) if params?
+        this
       populate: ->
         this[k] = arguments[i] for k, i in @params
         f.call?(this) for f in @hooks
+        this
 
       @className = className
     # If a category
@@ -68,7 +71,7 @@ createNodes = (template, parent = ->) ->
 
   return module.exports
 
-
+# Function call to create nodes, initialises the node structure
 createNodes
   # All infix operations
   BinOps: [
@@ -144,6 +147,7 @@ createNodes
 
   Symbols: [
     ['label', 'value'], ['validScope']
+    Ident: null
   ]
 
   # TODO - Implement pairs

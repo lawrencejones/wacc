@@ -99,18 +99,12 @@ run = (err, filename, src, options) ->
         returnMessage: false
         filename: filename
       }
+      console.log JSON.stringify tree
     catch err
       # If error then exit
       console.error 'Terminating due to syntax error.'
       process.exit 1
-    checkSemantics(tree, 'Semantic Analysis')
-
-  # Check semantics
-  checkSemantics = \
-    unsupported || (tree) ->
-      return if options['--parse-only']
-      # TODO - Implement semantic analysis
-      generateCode(tree, 'Code Generation')
+    generateCode(tree, 'Code Generation')
 
   # Assembly code generation
   generateCode = \

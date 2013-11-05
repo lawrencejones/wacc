@@ -6,6 +6,16 @@
 // Desc: pegjs file that describes the syntax for the WACC language.
 ///////////////////////////////////////////////////////////////////////////////
 
+{
+  Array.prototype.peek = function() {
+    return this[this.length - 1];
+  }
+  var Nodes = require('./nodes'),
+      Helpers = require('./nodeHelpers'),
+      Stack = [];
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Lexical Grammer
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,13 +231,10 @@ Expr
 
 ExprType
   = '(' Ws* Expr Ws* ')'
-  / CharLiteral
-  / StrLiteral
-  / ArrayElem
-  / PairLiteral
-  / IntLiteral
+  / lit:(CharLiteral / StrLiteral / ArrayElem / PairLiteral / IntLiteral / BoolLiteral){
+  return Helpers.constructLiteral.call(Nodes, lit[0], lit[1], stack);
+}
   / UnaryOp Ws* Expr
-  / BoolLiteral
   / Ident
 
 ExprTail
@@ -338,38 +345,41 @@ IntLiteral
   if (sign == '-') a = -a;
   if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
     throw new SyntaxError();
-  else return a;
+  else return ['int', a];
 }
 
 /*
    Defines the integer signage for positive or negative notation.
 */
 IntSign
-  = '+'
-  / '-'
+  = ('+' / '-')
 
 /*
    Defines the true and false string representation of the boolean
    literal token.
 */
 BoolLiteral
-  = 'true'
-  / 'false'
+  = bool:('true' / 'false'){
+  return ['bool', bool == 'true'];
+}
 
 /*
    Describes the literal representation of a character, specifically
    that it is a character surrounded by single quotes.
 */
 CharLiteral
-  = "#"
-  / "'" (Character/[#])  "'"
+  = c:("#"/ "'" (Character/[#]) "'"){
+  return ['char', c];
+}
 
 /*
    Very much similar to the character pattern but with double quotations
    and zero or more characters in length.
 */
 StrLiteral
-  = '"' Character* '"'
+  = '"' chars:Character* '"'{
+  return ['string', chars.join('')];
+}
 
 /*
    Defines the options for a character. Includes the possibility of
@@ -402,7 +412,7 @@ PairLiteral
    characters, followed by the end of line (EOL) terminator.
 */
 Comment
-  = Ws* '#' [^\n\r]* [\n\r] Ws*
+  = Ws* '#' [^\n\r]* [\n\r] Ws*{ return null; }
 
 /*
    Description of a digit, limited to the numbers from 0 to 9.
@@ -415,20 +425,12 @@ Digit
    used in conjunction with a backslash.
 */
 EscapedChar
-  = '0'
-  / 'b'
-  / 't'
-  / 'n'
-  / 'f'
-  / 'r'
-  / '"'
-  / "'"
-  / '\\'
+  = '0'/ 'b'/ 't' / 'n' / 'f' / 'r' / '"' / "'" / '\\'
 
 /*
    Defines the different characters that may represent whitespace.
 */
 Ws
-  = [ \t\r\n]
+  = [ \t\r\n]{ return null; }
 
 
