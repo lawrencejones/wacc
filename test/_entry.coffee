@@ -10,7 +10,7 @@
 
 fs = require 'fs'
 exec = require('child_process').exec
-wacc = require '../src/module'
+wacc = require('path').join(__dirname, '..', 'src', 'module')
 
 # Put results in global scope
 results = {}
