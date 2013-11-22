@@ -9,7 +9,8 @@
 #       attempt a parse. Any syntax errors are printed to stderr.
 ###############################################################################
 
-parser = require './parser'
+path = require 'path'
+parser = require path.join(__dirname, 'parser')
 
 # Function to generate syntax error string
 syntaxError = (e, src, filename) ->

@@ -21,12 +21,12 @@ all: $(LIB)
 # Don't bother compiling tests
 test: all
 	@-echo "Running testsuite."
-	@-$(COFFEE) $(TEST_DIR)/_entry.coffee
+	@-$(COFFEE) $(TEST_DIR)/entry.coffee
 
 # Watch for source changes and run tests
 watch: all
 	@-echo "Now watching src directory for changes."
-	@-$(COFFEE) $(TEST_DIR)/_entry.coffee watch
+	@-$(COFFEE) $(TEST_DIR)/entry.coffee watch
 
 # Phony clean target
 clean:

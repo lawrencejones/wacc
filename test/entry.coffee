@@ -11,7 +11,7 @@
 fs = require 'fs'
 exec = require('child_process').exec
 path = require 'path'
-wacc = require path.join(__dirname, '..', 'src', 'module')
+wacc = require path.join(__dirname, '..', 'src', 'wacc')
 notify = require path.join(__dirname, 'notify')
 
 # Put results in global scope

@@ -2,7 +2,7 @@
 # WACC Compiler Group 27
 # ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 # Author: lmj112
-# File: module.coffee
+# File: wacc.coffee
 # Desc: Collects the separate components of the compiler together, to export
 #       as a single wacc object that will contain all functions, data etc.
 ###############################################################################

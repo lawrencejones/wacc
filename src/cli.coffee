@@ -11,7 +11,8 @@ fs = require 'fs'
 # Support lab machines, please upgrade your node!
 if not fs.existsSync?
   fs.existsSync = require('path').existsSync
-wacc = require './module'
+path = require 'path'
+wacc = require path.join(__dirname, 'wacc')
 
 # List of command line options for wacc
 optAliases = {
