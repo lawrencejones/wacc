@@ -7,7 +7,6 @@
 ###############################################################################
 
 exec = (require 'child_process').exec
-
 mod = module?.exports = {}
 
 # Configure for the os and supported notifications
