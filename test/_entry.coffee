@@ -10,7 +10,9 @@
 
 fs = require 'fs'
 exec = require('child_process').exec
-wacc = require require('path').join(__dirname, '..', 'src', 'module')
+path = require 'path'
+wacc = require path.join(__dirname, '..', 'src', 'module')
+notify = require path.join(__dirname, 'notify')
 
 # Put results in global scope
 results = {}
@@ -133,32 +135,21 @@ testExamples = (callback) =>
     testFiles 'invalid/syntaxErr', invalidSyntax, results.syntax.invalid, callback
 
 
-# Hook for the growl communication
-# Mac OS X supported via growlnotify
-growl = (mssg, positive, sticky) ->
-  cmd = "growlnotify --image ./images"
-  if not positive
-    cmd = "#{cmd}/failed.png"
-  else cmd = "#{cmd}/success.png"
-  cmd = "#{cmd} -s" if sticky
-  exec "#{cmd} -m \"#{mssg}\""
-
-
 # For watching and rerunning test suite
 makeAndRun = ->
   exec "make all", (err, stdout, stderr) ->
     time = (new Date()).toTimeString().split(' ')[0]
     if stderr.split('\n').length > 3
       console.error "#{time} - Compilation failed! Not running tests."
-      growl 'Make Failed!', false, true   # make sticky
+      notify.send 'Make Failed!', false, true   # make sticky
     else
       testExamples ->
         if noOfFailed != 0
           console.error "#{time} - Tests produced #{noOfFailed} errors."
-          growl "Failed #{noOfFailed} test cases!"
+          notify.send "Failed #{noOfFailed} test cases!"
         else
           console.log "#{time} - Tests all passed."
-          growl 'Tests passed!', true
+          notify.send 'Tests passed!', true
 
 
 # Extract watch argument
