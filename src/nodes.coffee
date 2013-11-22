@@ -39,6 +39,7 @@
   to be run on finishing construction of that specific node.
 ###
 
+dependencies = require (require 'path').join(__dirname, 'dependencies')
 module.exports ?= {}
 
 createNodes = (template, parent = (@params = [], @deps = []) ->) ->
@@ -47,20 +48,23 @@ createNodes = (template, parent = (@params = [], @deps = []) ->) ->
   for own className,specs of template
     specs ?= [[]]
     obj = class extends parent
+      @className: className
       constructor: (params...) ->
-        @className = className
-        f.call?(this) for f in @deps
-        f.call?(this) for f in @pres ? []
+        @className = this.constructor.className
+        dependencies[f]?.call?(this) for f in @deps
+        @type ?= (tbl) ->
+          @btype or @left?.type?(tbl) or 'UNKNOWN'
         this.populate(params...) if params?
         this
       populate: ->
         for k, i in @params
           this[k] = arguments[i]
-          this[k]?.__proto__ = this
+          this[k].parent = @ if this[k]?.className?
         f.call?(this) for f in @posts ? []
         this
-      finalise: ->
-        f.call?(this) for f in @finals ? []
+      verify: (tbl) ->
+        @checks.pop().call?(this, tbl) while @checks?[0]?
+
     # If a category
     if specs.length > 1
       [ps, deps, subclasses] = specs
@@ -79,15 +83,15 @@ createNodes
   # All infix operations
   BinOps: [
     ['left', 'right'] # Parameters that all in BinOps include
-    [] # Post condition checks
+    ['childVerification'] # Post condition checks
     AssignOps: [
       [], ['typeEquality']
       AssignEqOp: null
     ]
     ArithmeticOps: [
-      [], ['noOverflow', 'onlyInts']
+      [], []
       DivZeroRisks: [
-        [], ['noDivZero']
+        [], []
         DivOp: null
         ModOp: null
       ]
@@ -96,7 +100,7 @@ createNodes
       SubOp: null
     ]
     BooleanOps: [
-      [], ['onlyBools']
+      [], []
       AndOp: null
       OrOp: null
     ]
@@ -105,7 +109,7 @@ createNodes
       EqOp: null
       NotEqOp: null
       NumericComparisons: [
-        [], ['onlyInts']
+        [], []
         LessOp: null
         LessEqOp: null
         GreaterOp: null
@@ -117,18 +121,18 @@ createNodes
   ]
 
   UnaryOps: [
-    ['operand'], []
+    ['operand'], ['childVerification']
     SignOps: [
       [], ['onlyInts']
       NegOp: null
     ]
     BuiltinOps: [
       [], []
-      LenOp: [['onlyArrays']]
-      OrdOp: [['onlyInts']]
-      ToIntOp: [['onlyChars']]
+      LenOp: null
+      OrdOp: null
+      ToIntOp: null
     ]
-    NotOp: [['onlyBools']]
+    NotOp: null
   ]
 
   Statements: [
@@ -154,16 +158,16 @@ createNodes
       ['statement'], []
       Scope: null
       Functions: [
-        ['ident', 'type', 'typeSignature'], ['validScope']
+        ['ident', 'btype', 'typeSignature'], []
         Function: null
       ]
     ]
     Programs: [
       ['functions', 'statement'], []
-      Program: null
+      Program: [['validSemantics']]
     ]
     FlowConstructs: [
-      ['condition', 'body'], ['validCondition']
+      ['condition', 'body'], []
       Conditionals: [
         ['elseBody'], []
         Conditional: null
@@ -173,10 +177,10 @@ createNodes
   ]
 
   Symbols: [
-    ['label'], ['validScope']
+    ['label'], ['symbolTableVerification']
     Ident: null
     TypedSymbols: [
-      ['type'], []
+      ['btype'], []
       Declaration: null
       Param: null
     ]
@@ -184,16 +188,17 @@ createNodes
 
   # TODO - Implement pairs
   Literals: [
-    ['value'], []
+    ['value'], ['literalType']
     StringLiteral: null
     IntLiteral: null
     BoolLiteral: null
     CharLiteral: null
     PairLiteral: null
-    DepthLiterals: [
-      ['dimension'], []
-      ArrayElem: [['validAccess']]
-      ArrayLiteral: [['homogenousTypes']]
-    ]
+  ]
+
+  DepthLiterals: [
+    ['dimension'], []
+    ArrayElem: [['validAccess']]
+    ArrayLiteral: [['homogenousTypes']]
   ]
 

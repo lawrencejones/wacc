@@ -26,6 +26,7 @@ parse = (src, opt = {}) ->
   try
     parser.parse(src)
   catch err
+    throw err
     mssg = syntaxError(err, src, opt['filename'])
     console.log mssg if opt['verbose']
     err.mssg = mssg

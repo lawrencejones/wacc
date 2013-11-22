@@ -50,7 +50,7 @@ FunctionBody
   = ReturnStatement
 
 FunctionDeclaration
-  = t:Type Ws+ i:Ident Ws* ts:TypeSignature{
+  = t:Type Ws+ i:Label Ws* ts:TypeSignature{
     if (ts == '') ts = null;
     return {'ident': i, 'type':t, 'typeSignature':ts};
   }
@@ -79,7 +79,7 @@ ParamListTail
    Defines a single parameter token.
 */
 Param
-  = t:Type Ws+ i:Ident{ return new Nodes.Param(i,t); }
+  = t:Type Ws+ i:Label{ return new Nodes.Param(i,t); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WACC Statements
@@ -119,7 +119,7 @@ ReturnStatement
     }
 
 Assignment
-  = p1:ArrayType Ws+ Ident Ws* '=' Ws* p2:ArrayLiteral{
+  = p1:ArrayType Ws+ Label Ws* '=' Ws* p2:ArrayLiteral{
       return new Nodes.AssignEqOp(p1, p2);
     }
   / p1:Param Ws* '=' Ws* p2:AssignRhs{
@@ -280,7 +280,7 @@ ExprType
   / op:UnaryOp Ws* value:Expr{
     return Helpers.constructUnary(Nodes, op, value);
   }
-  / Ident
+  / i:Ident { return i; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,7 +348,9 @@ PairElemType
    or underscores.
 */
 Ident
-  = [_a-zA-Z] [_a-zA-Z0-9]*
+  = i:Label { return new Nodes.Ident(i); }
+Label
+  = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return a + b; }
 
 /*
    Defines all the reserved words of the language, including keywords

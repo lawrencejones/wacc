@@ -13,17 +13,26 @@ module?.exports = class SymbolTable
   constructor: (@owner) ->
     (@tbl = {}).__proto__ = @owner.symbolTable
 
+  # General verification, returns type if successful
+  verify: (node) ->
+    console.log 'Verifying'
+    if node?.type?
+      @declareVar node.label, node.type
+    else if node?.label?
+      @useVar node.label
+
   # Used to declare variable
   declareVar: (symbol, type) ->
     if @tbl.hasOwnProperty(symbol)
       throw new Error 'Already declared'
     else
       @tbl[symbol] = {type: type}
+    type
 
   # Verifies that the symbol table has an entry
   # Assuming it does, will return the type for the node
   # to use as it sees fit.
-  useVar: () ->
+  useVar: (symbol) ->
     if not (s = @tbl[symbol])?
       throw new Error 'Variable not declared'
     else s.type
