@@ -48,15 +48,19 @@ createNodes = (template, parent = (@params = [], @deps = []) ->) ->
     specs ?= [[]]
     obj = class extends parent
       constructor: (params...) ->
+        @className = className
         f.call?(this) for f in @deps
         f.call?(this) for f in @pres ? []
         this.populate(params...) if params?
         this
       populate: ->
-        this[k] = arguments[i] for k, i in @params
+        for k, i in @params
+          this[k] = arguments[i]
+          this[k]?.__proto__ = this
         f.call?(this) for f in @posts ? []
         this
-      @className = className
+      finalise: ->
+        f.call?(this) for f in @finals ? []
     # If a category
     if specs.length > 1
       [ps, deps, subclasses] = specs
