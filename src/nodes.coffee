@@ -150,15 +150,26 @@ createNodes
   ]
 
   Statements: [
-    ['operand'], []
+    [], []
     Skip: null
-    Print: null
-    Println: null
-    Read: [['onlyString']]
-    Free: null
-    Return: null
-    PairAccessor: null
-    Exit: null
+    Assignment: [
+      ['lhsOperator', 'rhsOperator'], ['sameTypes']
+      Declaration: [['properIdentFormat', 'rhsDeclaredInScope']]
+      NonDeclaration:[['lhsDeclaredInScope'], ['rhsDeclaredInScope']]
+    ]
+    OneOperandStatements: [
+      ['operand']
+      Read: [['onlyString']]
+      Free: [['operatorHasTypePair']]
+      Return: [['sameTypeAsFunction']]
+      Exit: null
+      Print: null
+      Println: null
+      IfElse: null
+      While: null
+    ]
+    Begin: null
+    Semicolon: null
   ]
 
   FunctionApplications: [
