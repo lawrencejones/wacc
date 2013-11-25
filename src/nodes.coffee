@@ -90,7 +90,7 @@ createNodes
     ToIntOp: null
     NotOp: null
     BinOps: [
-      ['left'], [] 
+    ['left'], []
       AssignEqOp: null
       DivOp: null
       ModOp: null
@@ -147,7 +147,7 @@ createNodes
       While: null
     ]
   ]
-
+  #TODO: check if this is really necessary
   Symbols: [
     ['label'], ['symbolTableVerification']
     Ident: null
@@ -158,6 +158,11 @@ createNodes
     ]
   ]
 
+  Lookups: [
+    ['ident', 'index'], ['lookUpTable']
+      ArrayLookup: [['checkInBounds']]
+      PairLookup: null
+  ]
 
   Terminals: [
     ['type', 'value'] []
@@ -172,12 +177,5 @@ createNodes
     Pair:
       ['secondType' 'secondValue'] []
       pairLiteral: null
-  ]
-
-
-  DepthLiterals: [
-    ['dimension'], []
-    ArrayElem: [['validAccess']]
-    ArrayLiteral: [['homogenousTypes']]
   ]
 
