@@ -185,7 +185,7 @@ createNodes
   ]
 
   Lookups: [
-    ['ident', 'index' 'symbolTable'], ['lookUpTable']
+    ['ident', 'index'], ['lookUpTable']
       ArrayLookup: [['checkInBounds']]
       PairLookup: null
   ]
