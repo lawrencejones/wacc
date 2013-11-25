@@ -82,71 +82,32 @@ createNodes = (template, parent = (@params = [], @deps = []) ->) ->
 createNodes
   # All infix operations
 
-  Assign: [
-    []
-    []
-    AssignLeft: 
-      [], []
-
-    AssignRight : [[]]
-  ]
-
-
-
-
-
-  BinOps: [
-    ['left', 'right'] # Parameters that all in BinOps include
-    ['childVerification'] # Post condition checks
-    AssignOps: [
-      [], ['typeEquality']
+  Ops: [
+    ['right', 'symbolTable'], ['type']
+    NegOp: null
+    LenOp: null
+    OrdOp: null
+    ToIntOp: null
+    NotOp: null
+    BinOps: [
+    ['left'], []
       AssignEqOp: null
-    ]
-    ArithmeticOps: [
-      [], []
-      DivZeroRisks: [
-        [], []
-        DivOp: null
-        ModOp: null
-      ]
+      DivOp: null
+      ModOp: null
       MulOp: null
       AddOp: null
       SubOp: null
-    ]
-    BooleanOps: [
-      [], []
       AndOp: null
       OrOp: null
-    ]
-    ComparisonOps: [
-      [], []
       EqOp: null
       NotEqOp: null
-      NumericComparisons: [
-        [], []
-        LessOp: null
-        LessEqOp: null
-        GreaterOp: null
-        GreaterEqOp: null
-      ]
+      LessOp: null
+      LessEqOp: null
+      GreaterOp: null
+      GreaterEqOp: null
+      Statement: null
+      Expression: null
     ]
-    Statement: null
-    Expression: null
-  ]
-
-  UnaryOps: [
-    ['operand'], ['childVerification']
-    SignOps: [
-      [], ['onlyInts']
-      NegOp: null
-    ]
-    BuiltinOps: [
-      [], []
-      LenOp: null
-      OrdOp: null
-      ToIntOp: null
-    ]
-    NotOp: null
   ]
 
   Statements: [
@@ -173,12 +134,12 @@ createNodes
   ]
 
   FunctionApplications: [
-    ['label', 'params'], ['validParams']
+    ['ident', 'paramList'], ['validParams']
     FunctionApplication: null
   ]
 
   Scopes: [
-    ['body', 'symbolTable'], ['symbolTable']
+    ['body'], ['symbolTable']
     Scope: null
     Functions: [
       ['ident', 'returnType', 'paramList'], []
@@ -197,7 +158,7 @@ createNodes
       While: null
     ]
   ]
-
+  #TODO: check if this is really necessary
   Symbols: [
     ['label'], ['symbolTableVerification']
     Ident: null
@@ -208,6 +169,11 @@ createNodes
     ]
   ]
 
+  Lookups: [
+    ['ident', 'index'], ['lookUpTable']
+      ArrayLookup: [['checkInBounds']]
+      PairLookup: null
+  ]
 
   Terminals: [
     ['type', 'value'] []
@@ -222,12 +188,5 @@ createNodes
     Pair:
       ['secondType' 'secondValue'] []
       pairLiteral: null
-  ]
-
-
-  DepthLiterals: [
-    ['dimension'], []
-    ArrayElem: [['validAccess']]
-    ArrayLiteral: [['homogenousTypes']]
   ]
 
