@@ -167,21 +167,18 @@ createNodes
   ]
 
   Scopes: [
-    [], ['symbolTable']
-    NestedScopes: [
-      ['statement'], []
-      Scope: null
-      Functions: [
-        ['ident', 'btype', 'typeSignature'], []
-        Function: null
-      ]
+    ['body', 'symbolTable'], ['symbolTable']
+    Scope: null
+    Functions: [
+      ['ident', 'returnType', 'paramList'], []
+      Function: null
     ]
     Programs: [
-      ['functions', 'statement'], []
-      Program: [['validSemantics']]
+      ['functionDefs'], ['validSemantics']
+      Program: null
     ]
     FlowConstructs: [
-      ['condition', 'body'], []
+      ['condition'], ['validCondition']
       Conditionals: [
         ['elseBody'], []
         Conditional: null
