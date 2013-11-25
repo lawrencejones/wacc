@@ -81,6 +81,20 @@ createNodes = (template, parent = (@params = [], @deps = []) ->) ->
 # Function call to create nodes, initialises the node structure
 createNodes
   # All infix operations
+
+  Assign: [
+    []
+    []
+    AssignLeft: 
+      [], []
+
+    AssignRight : [[]]
+  ]
+
+
+
+
+
   BinOps: [
     ['left', 'right'] # Parameters that all in BinOps include
     ['childVerification'] # Post condition checks
@@ -186,15 +200,22 @@ createNodes
     ]
   ]
 
-  # TODO - Implement pairs
-  Literals: [
-    ['value'], ['literalType']
-    StringLiteral: null
-    IntLiteral: null
-    BoolLiteral: null
-    CharLiteral: null
-    PairLiteral: null
+
+  Terminals: [
+    ['type', 'value'] []
+    Simple: 
+      [], []
+      ident: null
+      intLiteral: null
+      boolLiteral: null
+      charLiteral: null
+      stringLiteral: null
+      arrayLiteral: null
+    Pair:
+      ['secondType' 'secondValue'] []
+      pairLiteral: null
   ]
+
 
   DepthLiterals: [
     ['dimension'], []
