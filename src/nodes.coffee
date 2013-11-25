@@ -83,7 +83,7 @@ createNodes
   # All infix operations
 
   Ops: [
-    ['right', 'symbolTable'], ['type']
+    ['right'], ['type']
     NegOp: null
     LenOp: null
     OrdOp: null
@@ -128,7 +128,7 @@ createNodes
   ]
 
   Scopes: [
-    ['body'], ['symbolTable']
+    ['body', 'symbolTable'], ['symbolTable']
     Scope: null
     Functions: [
       ['ident', 'returnType', 'paramList'], []
@@ -145,16 +145,6 @@ createNodes
         Conditional: null
       ]
       While: null
-    ]
-  ]
-  #TODO: check if this is really necessary
-  Symbols: [
-    ['label'], ['symbolTableVerification']
-    Ident: null
-    TypedSymbols: [
-      ['btype'], []
-      Declaration: null
-      Param: null
     ]
   ]
 
