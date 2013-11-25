@@ -82,19 +82,6 @@ createNodes = (template, parent = (@params = [], @deps = []) ->) ->
 createNodes
   # All infix operations
 
-  Assign: [
-    []
-    []
-    AssignLeft: 
-      [], []
-
-    AssignRight : [[]]
-  ]
-
-
-
-
-
   BinOps: [
     ['left', 'right'] # Parameters that all in BinOps include
     ['childVerification'] # Post condition checks
@@ -186,7 +173,7 @@ createNodes
       While: null
     ]
   ]
-
+  #TODO: check if this is really necessary
   Symbols: [
     ['label'], ['symbolTableVerification']
     Ident: null
@@ -197,6 +184,11 @@ createNodes
     ]
   ]
 
+  Lookups: [
+    ['ident', 'index' 'symbolTable'], ['lookUpTable']
+      ArrayLookup: [['checkInBounds']]
+      PairLookup: null
+  ]
 
   Terminals: [
     ['type', 'value'] []
@@ -211,12 +203,5 @@ createNodes
     Pair:
       ['secondType' 'secondValue'] []
       pairLiteral: null
-  ]
-
-
-  DepthLiterals: [
-    ['dimension'], []
-    ArrayElem: [['validAccess']]
-    ArrayLiteral: [['homogenousTypes']]
   ]
 
