@@ -12,46 +12,48 @@ SymbolTable = require path.join(__dirname, 'symbolTable')
 
 module.exports =
   
-  #TOD  # Takes all potential lhs types, finished with the return type
+  # Valid semantic check for entire program
+  validSemantics: ->
+    (@posts ?= []).push ->
+      @statement?.verify?(@symbolTable)
+
+  # Takes all potential lhs types, finished with the return type
   # Ex params - int, bool, bool
-  typeResolution: (childTypes...) ->
+  typeRestriction: (childTypes...) ->
     (@checks ?= []).push (tbl) ->
-      ltype = (c?.type?(tbl) for c in [@rhs, @lhs]).reduce (a,b) ->
+      ctype = (c?.type?(tbl) for k,c of @children).reduce (a,b) ->
         (a if (b ?= a) == a)
-      for t in lhsTypes
-        return true if t is ltype
+      for t in childTypes
+        return true if t == ctype
 
   # Takes the return type
   returnType: (rtype) ->
     # Set this node type to return the rtype (axiom)
     @type = -> rtype
 
-  
-  #TODO:...... check rhs is in the symbol table
-  rhsDeclaredInTable: ->
+  # Determines the return type for a unary
+  unaryReturn: ->
+    @type = -> {
+      NegOp: 'int'
+      LenOp: 'int'
+      ToIntOp: 'int'
+      OrdOp: 'char'
+      NotOp: 'bool'
+    }[@className]
 
-  #TODO:...... same as for rhs above
-  lhsDeclaredInTable: ->
-
-  #TODO:.....for assigning, need to check boths lhs and rhs have
-  #the same type
+  # Verifies that all children have the same type
   typeEquality: ->
+    @type = ->
+      eq = (k for own k,c of @children).reduce ((a, b) ->
+        a.type() == b.type()), true
+      if not eq then throw new Error 'Type equality failed'
 
-  #TODO:.....check that the params are valid
-  validParams: ->
+  # Configures function app and decl
+  functionParams: ->
+    switch @className
+      when 'FunctionDeclaration' then null
+      when 'FunctionApplication' then null
 
-  #TODO:..... for anything that introduces scope, creates a new symbol table
-  symbolTable: ->
-
-  #TODO:.....check valid semantics for the program
-  validSemantics: ->
-
-  #TODO:....check valid condition for loops
-  validCondition: ->
-
-  #TODO:..... check the array access is in bounds
-  checkInBounds: ->
-    
   # If given this dependency then the said node has a symbolTable field
   # which shall be used to verify scope queries
   symbolTable: ->
@@ -62,13 +64,6 @@ module.exports =
     (@checks ?= []).push (tbl) ->
       @lhs?.verify?(tbl)
       @rhs?.verify?(tbl)
-
-  # Means nodes are required to register or verify themselves against
-  # the symbol table, and any type questions will need to be referenced
-  symbolTableVerification: ->
-    @type = (tbl) ->
-      @btype ?= tbl.verify this
-      return @btype
 
   typeEquality: ->
     (@checks ?= []).push (tbl) ->
@@ -90,10 +85,6 @@ module.exports =
         PairLiteral: 'pair'
       }[@className]
 
-  # Valid semantic check for entire program
-  validSemantics: ->
-    (@posts ?= []).push ->
-      @statement?.verify?(@symbolTable)
 
 
 

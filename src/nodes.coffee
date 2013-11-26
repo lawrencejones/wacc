@@ -44,25 +44,32 @@ dependencies = require (path.join __dirname, 'dependencies')
 BaseNode = require (path.join __dirname, 'baseNode')
 module.exports ?= {}
 
-
 # Function to start node creation
 createNodes = (template, Parent = BaseNode) ->
-
   # For the className and the following specs of the child
   for own className,specs of template
-    specs ?= [[]]
-    # Create new class for our child node
-    Child = class extends Parent
+    # Match against specs
+    [ps, ds, subclasses] = specs ? [[]]
+    # If just a list of deps then switch ps and ds
+    if specs.length is 1
+      ds = ps
+      ps = []
+
+    # Generate next child
+    class Child extends Parent
       className: className
-    # If a category
-    if specs.length > 1
-      [ps, deps, subclasses] = specs
-      Child::paramKeys = ps.concat Parent::paramKeys ? []
-      Child::depKeys = deps.concat Parent::depKeys ? []
-      createNodes subclasses, Child
-    # If a final node
+      paramKeys: ps.concat Parent::paramKeys ? []
+      depKeys: ds.concat Parent::depKeys ? []
+
+    # _CATEGORY_
+    # UnaryOps: [ [params], [deps], {subclasses} ]
+    if specs.length is 1
+      return createNodes subclasses, Child
+    # _INLINED_
+    # FunctionApplication: [ [params], [deps] ]
+    # _TERMINAL_
+    # LenOp: [ [deps] ]
     else
-      Child::depKeys = Parent::depKeys.concat specs[0] ? []
       [ Child::depKeys,
         Child::paramKeys ].map (a) -> a.sort()
       module.exports[className] = Child
@@ -73,65 +80,78 @@ createNodes = (template, Parent = BaseNode) ->
 # Function call to create nodes, initialises the node structure
 createNodes
   UnaryOps: [
-    ['rhs'], []
+    ['rhs'], ['unaryReturn']
+    # TODO - Determine efficient method
     NegOp: null        # int  -> int
+    OrdOp: null        # int  -> char
     LenOp: null        # str  -> int
     ToIntOp: null      # char -> int
-    OrdOp: null        # int  -> char
     NotOp: null        # bool -> bool
   ]
+
   BinOps: [
     ['lhs', 'rhs'], []
-    MulOp: null        # int  -> int  -> int
-    AddOp: null        # int  -> int  -> int
-    SubOp: null        # int  -> int  -> int
-    DivOp: null        # int  -> int  -> int
-    ModOp: null        # int  -> int  -> int
-    LessOp: null       # int  -> int  -> bool
-    LessEqOp: null     # int  -> int  -> bool 
-    GreaterOp: null    # int  -> int  -> bool
-    GreaterEqOp: null  # int  -> int  -> bool
-    AndOp: null        # bool -> bool -> bool
-    OrOp: null         # bool -> bool -> bool
-    EqOp: null         # int|bool -> int|bool -> bool
-    NotEqOp: null      # int|bool -> int|bool -> bool
+    ArithmeticOps: [  # int -> int -> int
+      [], ['typeRestriction(int)', 'returnType(int)']
+      MulOp: null     # int -> int -> int 
+      AddOp: null     # int -> int -> int
+      SubOp: null     # int -> int -> int
+      DivZeroOps: [
+        [], []
+        DivOp: null   # int -> int -> int
+        ModOp: null   # int -> int -> int
+      ]
+      ComparisonOps: [
+        [], ['returnType(bool)']
+        LessOp: null       # int  -> int  -> bool
+        LessEqOp: null     # int  -> int  -> bool 
+        GreaterOp: null    # int  -> int  -> bool
+        GreaterEqOp: null  # int  -> int  -> bool
+      ]
+    ]
+    LogicalOps: [
+      [], ['typeRestriction(bool)', 'returnType(bool)']
+      AndOp: null        # bool -> bool -> bool
+      OrOp: null         # bool -> bool -> bool
+    ]
+    EqualityOps: [
+      [], ['typeRestriction(int,bool)', 'returnType(bool)']
+      EqOp: null         # int|bool -> int|bool -> bool
+      NotEqOp: null      # int|bool -> int|bool -> bool
+    ]
+    AssignmentOps: [
+      [], ['typeEquality']
+      Declaration: null  # { left: Ident,     right: AssignRhs }
+      Assignment: null   # { left: AssignLhs, right: AssignRhs }
+    ]
   ]
 
   Statements: [
-    ['right'], ['rhsDeclaredInTable']
-    ChecksNeeded: [
-      [], ['typeCheck']
-      Read: null #can only be either a program variable, an array elem or a pair elem
-      Free: null #must be given expression of type pair
-      Return: null
-    ]
-    Skip: null
-    Exit: null #takes an expression
-    Print: null   #prints can be given any type...
-    Println: null #...............................
-    Assignment: [
-      ['left'], ['typeEquality']
-      Declaration: null #add in table and check type equality
-      NonDeclaration:[['lhsDeclaredInTable']] #check in table and type equality and then update it in table
-    ]
+    ['rhs'], []
+    Skip: null     # NA
+    Return: null   # any
+    Read: null     # any
+    Exit: null     # any
+    Print: null    # any
+    Println: null  # any
+    Free: [['typeRestriction(pair)']]  # pair
   ]
 
-  FunctionApplications: [
-    ['ident', 'paramList'], ['validParams']
-    FunctionApplication: null #check function exists and params match
-    #check return type against function return type
+  Functions: [
+    ['ident'], ['functionParams']
+    FunctionDeclaration: [
+      ['paramList', 'rtype', 'statement'], ['symbolTable']
+    ]
+    FunctionApplication: [['args'], []]
   ]
+
 
   Scopes: [
-    ['body'], ['symbolTable']
+    ['statement'], []
     Scope: null
     Programs: [
       ['functionDefs'], ['validSemantics']
       Program: null
-    ]
-    Functions: [
-      ['ident', 'returnType', 'paramList'], []
-      Function: null
     ]
     FlowConstructs: [
       ['condition'], ['validCondition']
@@ -141,6 +161,7 @@ createNodes
         Conditional: null
       ]
     ]
+
   ]
 
   Lookups: [
@@ -165,7 +186,7 @@ createNodes
       ['type1', 'type2'], []
       PairType: null
     ]
-    PairRhsd: [
+    PairRhss: [
       ['value1', 'value2'], []
       PairRhs: null
     ]

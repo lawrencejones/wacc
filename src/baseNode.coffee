@@ -47,7 +47,10 @@ module?.exports = class BaseNode
     #--* Now the children variable is an object
     for own k,v of children
       # If the key is in param keys then assign
-      @children[k] = v if @paramKeys.indexOf(k) != -1
+      if @paramKeys.indexOf(k) != -1
+        if v instanceof BaseNode
+          @children[k] = v
+        else @[k] = v
       
     # Verify that the params are all filled
     for k in @paramKeys
