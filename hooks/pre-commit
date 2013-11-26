@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+if not system 'make'
+  puts 'Compilation failed.'
+  exit 1
+end
+

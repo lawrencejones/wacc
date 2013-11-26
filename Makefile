@@ -39,9 +39,9 @@ rebuild: clean all
 # The pegjs generated parser
 lib/parser.js: src/grammar.pegjs
 	@-echo "  Compiling $@"
-	@-$(PEG) $< $@
+	@$(PEG) $< $@
 
 # Rule for all other coffee files
 lib/%.js: src/%.coffee
 	@-echo "  Compiling $@"
-	@-$(COFFEE) $(COFFEE_FLAGS) -o $(LIB_DIR) $<
+	@$(COFFEE) $(COFFEE_FLAGS) -o $(LIB_DIR) $<
