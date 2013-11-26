@@ -173,9 +173,15 @@ createNodes
   ]
 
   Pairs: [
-    PairType
-    ['type1', 'type2'], [] #
-    PairRhs
-    ['value1', 'value2'] []
+    [], []
+    PairTypes: [
+      ['type1', 'type2'], [] 
+      PairType: null
+    ]
+    PairRhsd: [
+      ['value1', 'value2'] []
+      PairRhs: null
+    ]
   ]
+  
 
