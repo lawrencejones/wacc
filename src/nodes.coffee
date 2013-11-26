@@ -83,27 +83,33 @@ createNodes
   # All infix operations
 
   Ops: [
-    ['right'], ['type']
+    ['right'], ['rightType']
     NegOp: null
     LenOp: null
     OrdOp: null
     ToIntOp: null
     NotOp: null
     BinOps: [
-      ['left'], []
-      DivOp: null
-      ModOp: null
+      ['left'], ['leftType']
+      EqOp: null
+      NotEqOp: null
       MulOp: null
       AddOp: null
       SubOp: null
-      AndOp: null
-      OrOp: null
-      EqOp: null
-      NotEqOp: null
       LessOp: null
       LessEqOp: null
       GreaterOp: null
       GreaterEqOp: null
+      IntOps: [
+        [], ['noDivZero']
+        DivOp: null
+        ModOp: null
+      ]
+      BoolOps: [
+        [], [['typeBothBool']]
+        AndOp: null
+        OrOp: null
+      ]
     ]
   ]
 
@@ -129,7 +135,7 @@ createNodes
   ]
 
   Scopes: [
-    ['body', 'symbolTable'], ['symbolTable']
+    ['body'], ['symbolTable']
     Scope: null
     Programs: [
       ['functionDefs'], ['validSemantics']
@@ -150,7 +156,7 @@ createNodes
   ]
 
   Lookups: [
-    ['ident', 'index'], ['lookUpTable']
+    ['ident', 'index'], []
     ArrayLookup: [['checkInBounds']]
     PairLookup: null
   ]
