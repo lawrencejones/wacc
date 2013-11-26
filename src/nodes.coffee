@@ -82,11 +82,11 @@ createNodes
   UnaryOps: [
     ['rhs'], ['unaryReturn']
     # TODO - Determine efficient method
-    NegOp: null        # int  -> int
-    OrdOp: null        # int  -> char
-    LenOp: null        # str  -> int
-    ToIntOp: null      # char -> int
-    NotOp: null        # bool -> bool
+    NegOp: [['typeRestriction(int)']]       # int  -> int
+    OrdOp: [['typeRestriction(int)']]       # int  -> char
+    LenOp: [['typeRestriction(string)']]    # str  -> int
+    ToIntOp: [['typeRestriction(char)']]    # char -> int
+    NotOp: [['typeRestriction(bool)']]      # bool -> bool
   ]
 
   BinOps: [
@@ -126,6 +126,8 @@ createNodes
     ]
   ]
 
+  # Node to represent a single statement and it's successor
+  Statement: [['left', 'right'], ['childVerification']]
   Statements: [
     ['rhs'], []
     Skip: null     # NA
@@ -142,26 +144,23 @@ createNodes
     FunctionDeclaration: [
       ['paramList', 'rtype', 'statement'], ['symbolTable']
     ]
-    FunctionApplication: [['args'], []]
+    FunctionApplication: [['args'], ['validCall']]
   ]
 
 
   Scopes: [
-    ['statement'], []
-    Scope: null
-    Programs: [
-      ['functionDefs'], ['validSemantics']
-      Program: null
-    ]
+    [], ['symbolTable']
+    # Formed by begin .. end syntax
+    Scope: [['statement'],[]]
+    Program: [['statement', 'functionDefs'], ['validSemantics']]
     FlowConstructs: [
-      ['condition'], ['validCondition']
-      While: null #int|bool -> int|bool -> bool
+      ['condition', 'body'], ['validCondition']
+      While: null   # int|bool -> int|bool -> bool
       Conditionals: [
         ['elseBody'], []
         Conditional: null
       ]
     ]
-
   ]
 
   Lookups: [
@@ -171,13 +170,16 @@ createNodes
   ]
 
   Terminals: [
-    ['type', 'value'], []
+    ['value'], []
     Ident: null
-    IntLiteral: null
-    BoolLiteral: null
-    CharLiteral: null
-    StringLiteral: null
-    ArrayLiteral: null
+    Literals: [
+      [], ['literalType']
+      IntLiteral: null
+      BoolLiteral: null
+      CharLiteral: null
+      StringLiteral: null
+      ArrayLiteral: null
+    ]
   ]
 
   Pairs: [

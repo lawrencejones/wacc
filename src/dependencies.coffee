@@ -15,7 +15,13 @@ module.exports =
   # Valid semantic check for entire program
   validSemantics: ->
     (@posts ?= []).push ->
-      @statement?.verify?(@symbolTable)
+      @children.statement?.verify?(@symbolTable)
+
+  # If given this dependency then the said node has a symbolTable field
+  # which shall be used to verify scope queries
+  symbolTable: ->
+    (@checks ?= []).push (tbl) ->
+      @symbolTable = new SymbolTable(tbl)
 
   # Takes all potential lhs types, finished with the return type
   # Ex params - int, bool, bool
@@ -54,25 +60,6 @@ module.exports =
       when 'FunctionDeclaration' then null
       when 'FunctionApplication' then null
 
-  # If given this dependency then the said node has a symbolTable field
-  # which shall be used to verify scope queries
-  symbolTable: ->
-    @symbolTable = new SymbolTable(@)
-
-  # Initiates verification of the two/one leaf/es
-  childVerification: ->
-    (@checks ?= []).push (tbl) ->
-      @lhs?.verify?(tbl)
-      @rhs?.verify?(tbl)
-
-  typeEquality: ->
-    (@checks ?= []).push (tbl) ->
-      if not (@lhs? and @rhs?)
-        throw new Error 'Missing operands'
-      if @lhs?.type(tbl) != @rhs?.type(tbl)
-        console.log @lhs.type(tbl)(tbl)
-        console.log "Mismatched types #{@lhs.type(tbl)}/#{@rhs.type(tbl)}"
-        
 
   # Returns the basic type for literals
   literalType: ->
@@ -84,8 +71,4 @@ module.exports =
         CharLiteral: 'char'
         PairLiteral: 'pair'
       }[@className]
-
-
-
-
 
