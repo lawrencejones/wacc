@@ -328,7 +328,11 @@ PairElem
 
 PairAccessor
   = 'fst' / 'snd'
-
+/*=======================================================================================
+==========================================================================================
+=========================================================================================
+=========================================================================================
+======================Below is done====================================================*/
 /*
    Covers what variable types may be used inside a wacc pair.
 */
@@ -348,7 +352,7 @@ PairElemType
    or underscores.
 */
 Ident
-  = i:Label { return new Nodes.Ident(i); }
+  = i:Label { return Helpers.constructLiteral(Nodes, 'ident', i); }
 Label
   = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return a + b; }
 
@@ -397,7 +401,7 @@ IntLiteral
   if (sign == '-') a = -a;
   if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
     throw new SyntaxError();
-  else return ['int', a];
+  else return Helpers.constructLiteral(Nodes, 'int', a);
 }
 
 /*
@@ -412,7 +416,7 @@ IntSign
 */
 BoolLiteral
   = bool:('true' / 'false'){
-    return ['bool', bool == 'true'];
+    return Helpers.constructLiteral(Nodes, 'bool', bool);
   }
 
 /*
@@ -421,7 +425,7 @@ BoolLiteral
 */
 CharLiteral
   = c:("#"/ "'" (Character/[#]) "'"){
-    return ['char', c];
+    return Helpers.constructLiteral(Nodes, 'char', c);
   }
 
 /*
@@ -430,7 +434,7 @@ CharLiteral
 */
 StrLiteral
   = '"' chars:Character* '"'{
-    return ['string', chars.join('')];
+    return Helpers.constructLiteral(Nodes, 'string', chars.join(''));
   }
 
 /*
@@ -447,7 +451,7 @@ Character
 */
 ArrayLiteral
   = '[' Ws* elems:ArrayLiteralList? Ws* ']'{
-    return new Nodes.ArrayLiteral(elems);
+    return Helpers.constructLiteral(Nodes, 'array', elems);
   }
 
 ArrayLiteralList
@@ -466,7 +470,7 @@ ArrayLiteralListTail
    the null value. New pairs are created via the `newpair` call.
 */
 PairLiteral
-  = 'null'{ return ['pair', null]; }
+  = 'null'{ return Helpers.constructLiteral(Nodes, 'pair', null); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fundamentals
