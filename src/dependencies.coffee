@@ -9,25 +9,35 @@
 
 path = require 'path'
 SymbolTable = require path.join(__dirname, 'symbolTable')
+SemanticError = (@mssg, @node, @name = 'SemanticError') ->
 
 module.exports =
   
+  # If given this dependency then the said node has a symbolTable field
+  # which shall be used to verify scope queries
+  symbolTable: ->
+    constructTable = (tbl) ->
+      @symbolTable = new SymbolTable(tbl)
+    switch @className
+      when 'Program' then (@posts ?= []).unshift constructTable
+      else (@checks ?= []).unshift constructTable
+
   # Valid semantic check for entire program
   validSemantics: ->
     (@posts ?= []).push ->
       @children.statement?.verify?(@symbolTable)
 
-  # If given this dependency then the said node has a symbolTable field
-  # which shall be used to verify scope queries
-  symbolTable: ->
-    (@checks ?= []).push (tbl) ->
-      @symbolTable = new SymbolTable(tbl)
+  # Calls verify on it's children
+  # NB - This function is high priority, must be at front of checks
+  childVerification: (children...) ->
+    (@checks ?= []).unshift (tbl) ->
+      @children[child]?.verify(tbl) for child in children
 
   # Takes all potential lhs types, finished with the return type
   # Ex params - int, bool, bool
   typeRestriction: (childTypes...) ->
     (@checks ?= []).push (tbl) ->
-      ctype = (c?.type?(tbl) for k,c of @children).reduce (a,b) ->
+      ctype = (c.type?(tbl) for own k,c of @children).reduce (a,b) ->
         (a if (b ?= a) == a)
       for t in childTypes
         return true if t == ctype
@@ -39,7 +49,7 @@ module.exports =
 
   # Determines the return type for a unary
   unaryReturn: ->
-    @type = ->
+    @type = (tbl) ->
       basic = {
         NegOp: 'int'
         LenOp: 'int'
@@ -47,15 +57,20 @@ module.exports =
         OrdOp: 'char'
         NotOp: 'bool'
       }[@className]
-      basic or (-> @children.rhs.type())
 
+  # Ident scoping check
+  scopingVerification: ->
+    @type = (tbl) ->
+      type = tbl.verify @
+      @type = -> type
 
   # Verifies that all children have the same type
-  typeEquality: ->
-    @type = ->
-      eq = (k for own k,c of @children).reduce ((a, b) ->
-        a.type() == b.type()), true
-      if not eq then throw new Error 'Type equality failed'
+  typeEquality: (fields...) ->
+    @type = (tbl) ->
+      eq = (@children[k].type?(tbl) for k in fields).reduce (t1,t2) ->
+        if t2 == t2 then t2 else null
+      if not eq
+        throw new SemanticError 'Type equality failed', @
 
   # Configures function app and decl
   functionParams: ->

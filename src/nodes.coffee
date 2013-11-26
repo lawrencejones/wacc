@@ -51,8 +51,7 @@ createNodes = (template, Parent = BaseNode) ->
     # Match against specs
     [ps, ds, subclasses] = (specs ?= [[]])
     # If just a list of deps then switch ps and ds
-    if specs.length == 1
-      a = ds ? []; ds = ps; ps = a
+    if specs.length == 1 then ds = ps; ps = []
     # Set Child to be Parent initially
     class Child extends Parent
       @className: className
@@ -67,7 +66,6 @@ createNodes = (template, Parent = BaseNode) ->
       module.exports[className] = Child
   
   module.exports
-  
 
 
 # Function call to create nodes, initialises the node structure
@@ -118,14 +116,14 @@ createNodes
       NotEqOp: null      # int|bool -> int|bool -> bool
     ]
     AssignmentOps: [
-      [], ['typeEquality']
+      [], ['typeEquality(lhs,rhs)']
       Declaration: null  # { left: Ident,     right: AssignRhs }
       Assignment: null   # { left: AssignLhs, right: AssignRhs }
     ]
   ]
 
   # Node to represent a single statement and it's successor
-  Statement: [['left', 'right'], ['childVerification']]
+  Statement: [['left', 'right'], ['childVerification(left,right)']]
   Statements: [
     ['rhs'], []
     Skip: null     # NA
@@ -168,13 +166,13 @@ createNodes
 
   TypedNodes: [
     ['typeSig'], []
-    Param: null      # int|bool|string|char
+    Param: [[], ['scopingVerification']]      # int|bool|string|char
     ArrayType: null  # int[][]
   ]
 
   Terminals: [
     [], []
-    Ident: [['label'],[]]
+    Ident: [['label'],['scopingVerification']]
     Literals: [
       ['value'], ['literalType']
       IntLiteral: null

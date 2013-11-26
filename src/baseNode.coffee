@@ -6,26 +6,29 @@
 # Desc: Defines the basic node behaviour that every node will satisfy
 ###############################################################################
 
-dependencies = (require 'path').join __dirname, 'dependencies'
+dependencies = require (require 'path').join __dirname, 'dependencies'
 
 # Represents the base node
 module?.exports = class BaseNode
 
   # Assign for the prototype base
-  @className: 'BaseNode'; depKeys: []; paramKeys: []
+  @className: 'BaseNode'
+  dependencies: dependencies
+  depKeys: []; paramKeys: []; checks: []
   # Shared constructor for all nodes
   # Takes children - an object that gives values for all children
   #   eg. { lhs: <value>, rhs: <value> }
   constructor: (arg) ->
     @className = @constructor.className
-    # Initialise keys for children
-    (@children ?= {})[k] = null for k in @paramKeys
+    @verified = false
     # For all dependency keys in @depKeys (proto)
     for d in @depKeys
       # Match on the dep key and params
-      [key, params...] = d.split /[(),]/g
+      [key, params...] = d.split(/[(),]/g).filter (s) -> s != ''
       # Call the dependencies
-      dependencies[key]?.call?(this, params...)
+      @dependencies[key]?.call(this, params...)
+    # Initialise keys for children
+    (@children ?= {})[k] = null for k in @paramKeys
     # Populate the children
     this.populate(arg) if arg?
     this
@@ -59,12 +62,14 @@ module?.exports = class BaseNode
     this
 
   # Default type answer
-  type: ->
-    btype or @left?.type?(tbl) or 'UNKNOWN'
+  type: -> @btype
 
   # Final node verifications
   verify: (tbl) ->
     console.log "Verifying #{@className} node"
-    @checks.pop().call?(this, tbl) while @checks?[1]?
+    console.log tbl
+    if not @verified
+      c.call?(this, tbl) for c in @checks
+      @verified = true
     
 

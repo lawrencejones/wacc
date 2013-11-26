@@ -132,11 +132,11 @@ Assignment
       var lhs = new Nodes.ArrayType({ident: i, typeSig: p1});
       return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
-  / lhs:Param Ws* '=' Ws* rhs:AssignRhs{
-      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
-    }
   / lhs:AssignLhs Ws* '=' Ws* rhs:AssignRhs{
       return new Nodes.Assignment({lhs: lhs, rhs: rhs});
+    }
+  / lhs:Param Ws* '=' Ws* rhs:AssignRhs{
+      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
 
 Conditional
