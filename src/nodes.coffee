@@ -90,7 +90,7 @@ createNodes
     ToIntOp: null
     NotOp: null
     BinOps: [
-    ['left'], []
+      ['left'], []
       DivOp: null
       ModOp: null
       MulOp: null
@@ -151,22 +151,21 @@ createNodes
 
   Lookups: [
     ['ident', 'index'], ['lookUpTable']
-      ArrayLookup: [['checkInBounds']]
-      PairLookup: null
+    ArrayLookup: [['checkInBounds']]
+    PairLookup: null
   ]
 
   Terminals: [
-    ['type', 'value'] []
-    Simple: 
-      [], []
-      ident: null
-      intLiteral: null
-      boolLiteral: null
-      charLiteral: null
-      stringLiteral: null
-      arrayLiteral: null
-    Pair:
-      ['secondType' 'secondValue'] []
+    ['type', 'value'], []
+    ident: null
+    intLiteral: null
+    boolLiteral: null
+    charLiteral: null
+    stringLiteral: null
+    arrayLiteral: null
+    Pair: [
+      ['secondType', 'secondValue'], []
       pairLiteral: null
+    ]
   ]
 
