@@ -28,7 +28,7 @@ module?.exports =
   
     new statementLookup[key] value
   
-  constructBinary : (Nodes, key, first, second) ->
+  constructBinary : (Nodes, key, value) ->
     binaryLookup =
       '*':   Nodes.MulOp
       '/':   Nodes.DivOp
@@ -44,6 +44,6 @@ module?.exports =
       '&&':  Nodes.AndOp
       '||':  Nodes.OrOp
   
-    new binaryLookup[key] first, second
+    new binaryLookup[key] value
 
 

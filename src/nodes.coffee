@@ -49,22 +49,19 @@ createNodes = (template, Parent = BaseNode) ->
   # For the className and the following specs of the child
   for own className,specs of template
     # Match against specs
-    [ps, ds, subclasses] = specs ?= [[]]
+    [ps, ds, subclasses] = (specs ?= [[]])
     # If just a list of deps then switch ps and ds
-    if specs.length is 1 then ds = ps; ps = []
+    if specs.length == 1
+      a = ds ? []; ds = ps; ps = a
     # Set Child to be Parent initially
-    Child = Parent; if specs.length is 3
-      Child = class extends Parent
-
-    # Generate next child
-    class Child
-      className: className
-      paramKeys: ps.concat Parent::paramKeys ? []
-      depKeys: ds.concat Parent::depKeys ? []
+    class Child extends Parent
+      @className: className
+      paramKeys: ps.concat (Parent::paramKeys ? [])
+      depKeys: ds.concat (Parent::depKeys ? [])
 
     # _CATEGORY_
     # UnaryOps: [ [params], [deps], {subclasses} ]
-    if specs.length == 3
+    if subclasses?
       createNodes subclasses, Child
     else
       module.exports[className] = Child
@@ -152,7 +149,7 @@ createNodes
     [], ['symbolTable']
     # Formed by begin .. end syntax
     Scope: [['statement'],[]]
-    Program: [['statement', 'functionDefs'], ['validSemantics']]
+    Program: [['statement', 'functions'], ['validSemantics']]
     FlowConstructs: [
       ['condition', 'body'], ['validCondition']
       While: null   # int|bool -> int|bool -> bool
@@ -169,17 +166,17 @@ createNodes
     PairLookup: null #check exists 
   ]
 
-  Types: [
-    ['ident', 'type'], []
-    Param: null        # int|bool|string|char
-    ArrayType: null    # int[][]
+  TypedNodes: [
+    ['typeSig'], []
+    Param: null      # int|bool|string|char
+    ArrayType: null  # int[][]
   ]
 
   Terminals: [
-    ['value'], []
-    Ident: null
+    [], []
+    Ident: [['label'],[]]
     Literals: [
-      [], ['literalType']
+      ['value'], ['literalType']
       IntLiteral: null
       BoolLiteral: null
       CharLiteral: null

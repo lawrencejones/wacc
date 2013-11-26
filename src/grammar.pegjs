@@ -22,15 +22,16 @@
 */
 Start
   = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{
-      if (main == '') return {};
       return main;
-}
+  }
 
 ProgramBlock
   = ('begin' Ws+ body:ProgramBody Ws* 'end'){ return body; }
 
 ProgramBody
-  = fs:(Function/Comment)* ss:Statement{ return new Nodes.Program((ss, fs || [])); }
+  = fs:(Function/Comment)* s:Statement{
+      return new Nodes.Program({ statement: s, functions:(fs || [])});
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -42,24 +43,24 @@ ProgramBody
    which encapsulate statements.
 */
 Function
-  = fsig:FunctionDeclaration (Ws* 'is' Ws+) ss:FunctionBody Ws+ 'end' Ws*{
-    fsig.statement = ss;
-    return fsig;
+  = fsig:FunctionDeclaration (Ws* 'is' Ws+) s:FunctionBody Ws+ 'end' Ws*{
+    fsig.statement = s;
+    return new Nodes.FunctionDeclaration(fsig);
   }
 
 FunctionBody
-  = ReturnStatement
+  = s:ReturnStatement { return s; }
 
 FunctionDeclaration
   = t:Type Ws+ i:Label Ws* ts:TypeSignature{
-    if (ts == '') ts = null;
-    return new Nodes.FunctionDeclaration(i, ts, t, null);
+    return {rtype: t, ident: i, paramList: ts};
   }
 
 TypeSignature
   = '(' Ws* pl:ParamList? Ws* ')'{
+    if (pl == '') return [];
     return pl;
-}
+  }
 
 /*
    Defines a list of parameter declarations with their respective types for
@@ -80,7 +81,9 @@ ParamListTail
    Defines a single parameter token.
 */
 Param
-  = t:Type Ws+ i:Label{ throw new Error("Create a param node"); }
+  = t:Type Ws+ i:Label{
+    return new Nodes.Param( {ident: i, typeSig: t} );
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WACC Statements
@@ -94,58 +97,69 @@ Param
 Statement
   = a:StatementType b:StatementTail? {
       if (b == '') b = null;
-      return new Nodes.Statement(a,b);
+      return new Nodes.Statement({left: a, right: b});
     }
 
 StatementType
-  = a:'skip'{ 
-      return new Nodes.Skip();
-    }
+  = a:'skip' { 
+    return new Nodes.Skip();
+  }
   / key:('println' / 'print' / 'free' / 'read' / 'exit') Ws+ e:Expr{
-      return Helpers.constructStatement(Nodes, key, e);
-    }
+    return Helpers.constructStatement(Nodes, key, {rhs: e});
+  }
   / item:(Scope / Conditional / While / Assignment){
     return item;
   }
 
 Scope
   = 'begin' Ws+ s:Statement* Ws* 'end' {
-      return new Nodes.Scope(s);
-    }
+    return new Nodes.Scope(s);
+  }
        
 ReturnStatement
   = a:(Statement Ws* ';' Ws+)? 'return' Ws+ e:Expr{
-      var ret = new Nodes.Statement(new Nodes.Return(e), null);
-      if (a != '') {
-        return a.right = ret;
-      } return ret;
+    var ret = new Nodes.Return({rhs: e});
+    if (a == '')
+    {
+      return new Nodes.Statement({left: ret, right: null});
     }
+    return new Nodes.Statement({left: a, right: ret});
+  }
 
 Assignment
-  = p1:ArrayType Ws+ Label Ws* '=' Ws* p2:ArrayLiteral{
-      return new Nodes.Decleration(p1, p2);
+    // int[] label ...
+  = p1:ArrayType Ws+ i:Label Ws* '=' Ws* rhs:ArrayLiteral{
+      var lhs = new Nodes.ArrayType({ident: i, typeSig: p1});
+      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
-  / p1:Param Ws* '=' Ws* p2:AssignRhs{
-      return new Nodes.Decleration(p1, p2);
+  / lhs:Param Ws* '=' Ws* rhs:AssignRhs{
+      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
-  / p1:AssignLhs Ws* '=' Ws* p2:AssignRhs{
-      return new Nodes.Assignment(p1, p2);
+  / lhs:AssignLhs Ws* '=' Ws* rhs:AssignRhs{
+      return new Nodes.Assignment({lhs: lhs, rhs: rhs});
     }
 
 Conditional
-  = 'if' Ws+ cond:Expr Ws* 'then' Ws+ trueBody:IfBody Ws* 'else' Ws+ falseBody:IfBody Ws* 'fi'{
-    return new Nodes.Conditional(cond, trueBody, falseBody);
+  = 'if' Ws+ cond:Expr Ws* 'then' Ws+ trueBody:IfBody Ws* 'else' Ws+ elseBody:IfBody Ws* 'fi'{
+    return new Nodes.Conditional({
+      condition: cond,
+      body: trueBody,
+      elseBody: elseBody
+    });
   }
 
 IfBody
-  = ss:(Statement / ReturnStatement)?{
-    if (ss = '') ss = {};
-    return ss;
+  = s:(Statement / ReturnStatement)?{
+    if (s = '') return new Nodes.Skip({rhs: null});
+    return s;
 }
 
 While
   = 'while' Ws+ cond:Expr Ws* 'do' Ws+ body:Statement Ws* 'done'{
-    return new Nodes.While(cond, body);
+    return new Nodes.While({
+      condition: cond,
+      body:body
+    });
   }
 
 StatementTail
@@ -172,10 +186,14 @@ AssignLhs
 */
 AssignRhs
   = 'call' Ws+ label:Ident '(' Ws* args:ArgList? Ws* ')'{
-    return new Nodes.FunctionApplication(args, label);
+    return new Nodes.FunctionApplication({
+      args: args, ident:label
+    });
   }
-  / 'newpair' Ws* '(' Ws* v1:Expr Ws* ',' Ws* v2:Expr Ws* ')' Ws*{
-    return new Nodes.PairRhs(v1, v2);
+  / 'newpair' Ws* '(' Ws* fst:Expr Ws* ',' Ws* snd:Expr Ws* ')' Ws*{
+    return new Nodes.PairLiteral({
+      value: { fst: fst, snd: snd }
+    });
   }
   / rhs:(PairElem / ArrayLiteral / Expr){
     return rhs;
@@ -194,7 +212,6 @@ ArgList
     var tail = t || [];
     return [e].concat(tail);
   }
-    
 
 ArgListTail
   = Ws* ',' Ws+ e:Expr{
@@ -242,9 +259,7 @@ ComparisonOp
    Selection of available types within the wacc static typing system.
 */
 Type
-  = ArrayType
-  / PairType
-  / BaseType
+  = (ArrayType / PairType / BaseType)
 
 /*
    The barest type classes for use in wacc.
@@ -263,28 +278,32 @@ BaseType
    recursion issues.
 */
 Expr
-  = left:ExprType tail:ExprTail?{
-    if (tail != '')
+  = lhs:ExprType rhs:ExprTail?{
+    if (rhs != '')
     {
-      return new Helpers.constructBinary(Nodes, tail.op, left, tail.exp);
+      return new Helpers.constructBinary(Nodes, rhs.op, {lhs: lhs, rhs: rhs.exp});
     }
-    return left;
+    return lhs;
   }
 
 ExprTail
-  = (Ws* op:BinOp Ws* exp:Expr)
+  = (Ws* op:BinOp Ws* exp:Expr){
+    return {op: op, exp: exp};
+  }
 
+// TODO - Form correct precedence
 ExprType
   = '(' Ws* e:Expr Ws* ')'{
     return e;
   }
-  / lit:(ArrayElem / PairElem / CharLiteral / StrLiteral / 
-        PairLiteral / IntLiteral / BoolLiteral / Ident){
-    return lit;
+  / e:(ArrayElem / PairElem / CharLiteral / StrLiteral / 
+        PairLiteral / IntLiteral / BoolLiteral){
+    return e;
   }
   / op:UnaryOp Ws* value:Expr{
-    return Helpers.constructUnary(Nodes, op, value);
+    return Helpers.constructUnary(Nodes, op, {rhs: value});
   }
+  / e:Ident { return e; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,16 +317,19 @@ ExprType
 */
 ArrayType
   = t:BaseType bs:('[' ']')+{
-    throw new Error("Create node for array lhs");
+    return {base: t, depth: bs.length};
   }
 
 /*
    Defines elements within wacc arrays.
 */
 ArrayElem
-  = i:Ident accessors:('[' Ws* Expr Ws* ']')+{
-    return new Nodes.ArrayLookup(i, accessors);
+  = i:Ident accessors:ArrayAccessor+{
+    return new Nodes.ArrayLookup({ident: i, index:accessors});
   }
+
+ArrayAccessor
+  = '[' Ws* e:Expr Ws* ']'{ return e; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Pairs
@@ -318,16 +340,15 @@ ArrayElem
 */
 PairType
   = 'pair' '(' Ws* t1:PairElemType Ws* ',' Ws* t2:PairElemType Ws* ')'{
-    return new Nodes.PairType(t1, t2);
+    return [t1,t2];
   }
 
-/*=====================================////////////////========================
+/*
    Defines what is possible for an element of a pair.
 */
 PairElem
   = a:PairAccessor Ws+ e:Expr{
-    if(a == 'fst') {return new Nodes.FstOp(e);} 
-    else {return new Nodes.SndOp(e);}
+    return new {fst: Nodes.FstOp, snd: Nodes.SndOp}[a](e);
   }
 
 PairAccessor
@@ -354,7 +375,7 @@ PairElemType
 Ident
   = i:Label { return new Nodes.Ident(i); }
 Label
-  = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return a + b; }
+  = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return [a].concat(b); }
 
 /*
    Defines all the reserved words of the language, including keywords
@@ -401,7 +422,7 @@ IntLiteral
   if (sign == '-') a = -a;
   if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
     throw new SyntaxError();
-  else return new Nodes.IntLiteral(a);
+  else return new Nodes.IntLiteral({value: a});
 }
 
 /*
@@ -416,7 +437,7 @@ IntSign
 */
 BoolLiteral
   = bool:('true' / 'false'){
-    return new Nodes.BoolLiteral(bool);
+    return new Nodes.BoolLiteral({value: bool == 'true'});
   }
 
 /*
@@ -425,7 +446,7 @@ BoolLiteral
 */
 CharLiteral
   = c:("#"/ "'" (Character/[#]) "'"){
-    return new Nodes.CharLiteral(c);
+    return new Nodes.CharLiteral({value: c});
   }
 
 /*
@@ -434,7 +455,7 @@ CharLiteral
 */
 StrLiteral
   = '"' chars:Character* '"'{
-    return new Nodes.StringLiteral(chars);
+    return new Nodes.StringLiteral({value: chars.join('')});
   }
 
 /*
@@ -451,7 +472,7 @@ Character
 */
 ArrayLiteral
   = '[' Ws* elems:ArrayLiteralList? Ws* ']'{
-    return new Nodes.ArrayLiteral(elems);
+    return new Nodes.ArrayLiteral({value: elems});
   }
 
 ArrayLiteralList
@@ -461,7 +482,7 @@ ArrayLiteralList
 
 ArrayLiteralListTail
   = Ws* ',' Ws* e:Expr es:ArrayLiteralListTail?{
-    if (es = '') return e;
+    if (es = '') return [e];
     return [e].concat(es);
   }
 
@@ -470,7 +491,7 @@ ArrayLiteralListTail
    the null value. New pairs are created via the `newpair` call.
 */
 PairLiteral
-  = 'null'{ return new Nodes.PairLiteral('null'); }
+  = 'null'{ return new Nodes.PairLiteral({value: 'null'}); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fundamentals

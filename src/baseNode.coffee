@@ -6,15 +6,18 @@
 # Desc: Defines the basic node behaviour that every node will satisfy
 ###############################################################################
 
+dependencies = (require 'path').join __dirname, 'dependencies'
+
 # Represents the base node
 module?.exports = class BaseNode
 
   # Assign for the prototype base
-  depKeys: []; paramKeys: []
+  @className: 'BaseNode'; depKeys: []; paramKeys: []
   # Shared constructor for all nodes
   # Takes children - an object that gives values for all children
   #   eg. { lhs: <value>, rhs: <value> }
   constructor: (arg) ->
+    @className = @constructor.className
     # Initialise keys for children
     (@children ?= {})[k] = null for k in @paramKeys
     # For all dependency keys in @depKeys (proto)
@@ -48,16 +51,9 @@ module?.exports = class BaseNode
     for own k,v of children
       # If the key is in param keys then assign
       if @paramKeys.indexOf(k) != -1
-        if v instanceof BaseNode
-          @children[k] = v
-        else @[k] = v
+        @children[k] = v
+      else @[k] = v
       
-    # Verify that the params are all filled
-    for k in @paramKeys
-      # Else throw error
-      if not @children[k]?
-        throw new Error 'Populate did not receive all args.'
-
     # For all our post checks, run them
     f.call?(this) for f in @posts ? []
     this

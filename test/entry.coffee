@@ -72,7 +72,7 @@ validSyntax = (file) ->
       filename: file
     }
   catch err
-    if err.mssg?
+    if err?.name == 'SyntaxError'
       noOfFailed++
       return err.mssg
     else throw err
