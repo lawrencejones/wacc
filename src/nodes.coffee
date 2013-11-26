@@ -83,14 +83,14 @@ createNodes
   # All infix operations
 
   Ops: [
-    ['right'], ['rightType']
+    ['right'], ['typeCheck']
     NegOp: null
     LenOp: null
     OrdOp: null
     ToIntOp: null
     NotOp: null
     BinOps: [
-      ['left'], ['leftType']
+      ['left'], []
       EqOp: null
       NotEqOp: null
       MulOp: null
