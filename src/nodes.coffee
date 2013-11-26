@@ -84,26 +84,32 @@ createNodes
 
   Ops: [
     ['right'], ['type']
-    NegOp: null
-    LenOp: null
-    OrdOp: null
-    ToIntOp: null
-    NotOp: null
+    NegOp: [['typeInt']]
+    LenOp: [['typeString']]
+    OrdOp: [['typeInt']]
+    ToIntOp: [['typeChar']]
+    NotOp: [['typeBool']]
     BinOps: [
       ['left'], []
-      DivOp: null
-      ModOp: null
-      MulOp: null
-      AddOp: null
-      SubOp: null
-      AndOp: null
-      OrOp: null
+      IntOps: [
+        ['typeBothInt']
+        DivOp: ['rightNotZero']
+        ModOp: ['rightNotZero']
+        MulOp: null
+        AddOp: null
+        SubOp: null
+        LessOp: null
+        LessEqOp: null
+        GreaterOp: null
+        GreaterEqOp: null
+      ]
+      BoolOps: [
+        ['typeBothBool']
+        AndOp: null
+        OrOp: null
+      ]
       EqOp: null
       NotEqOp: null
-      LessOp: null
-      LessEqOp: null
-      GreaterOp: null
-      GreaterEqOp: null
     ]
   ]
 
