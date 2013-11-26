@@ -33,7 +33,7 @@ module?.exports =
       NonDeclaration: Nodes.NonDeclaration
   
     new statementLookup[key] values...
-    
+
   
   constructUnary : (Nodes, key, values) ->
     unaryLookup =
@@ -62,3 +62,11 @@ module?.exports =
       '||':  Nodes.OrOp
   
     new binaryLookup[key] first, second
+
+  constructLookup : (Nodes, key, ident, index) ->
+    lookupLookup = 
+      array: Nodes.ArrayLookup
+      pair:  Nodes.PairLookup
+
+    new lookupLookup[key] ident, index
+
