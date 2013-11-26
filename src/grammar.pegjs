@@ -294,7 +294,7 @@ ExprType
 */
 ArrayType
   = t:BaseType bs:('[' ']')+{
-    return { 'type': t, 'depth': bs.length };
+    throw new Error("Create node for array lhs");
   }
 
 /*
@@ -302,7 +302,7 @@ ArrayType
 */
 ArrayElem
   = i:Ident accessors:('[' Ws* Expr Ws* ']')+{
-    return new Nodes.ArrayElem(i, accessors);
+    return new Nodes.ArrayLookup(i, accessors);
   }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,25 +314,20 @@ ArrayElem
 */
 PairType
   = 'pair' '(' Ws* t1:PairElemType Ws* ',' Ws* t2:PairElemType Ws* ')'{
-    return [t1,t2];
+    return new Nodes.PairType(t1, t2);
   }
 
-/*
+/*=====================================////////////////========================
    Defines what is possible for an element of a pair.
-   TODO - lookup exact usage.
 */
 PairElem
   = a:PairAccessor Ws+ e:Expr{
-    return new Nodes.PairAccessor({'value': e, 'selector': a}); 
+    throw new Error("Add PairElem (fst/snd) to Nodes");
   }
 
 PairAccessor
   = 'fst' / 'snd'
-/*=======================================================================================
-==========================================================================================
-=========================================================================================
-=========================================================================================
-======================Below is done====================================================*/
+
 /*
    Covers what variable types may be used inside a wacc pair.
 */
@@ -352,7 +347,7 @@ PairElemType
    or underscores.
 */
 Ident
-  = i:Label { return Helpers.constructLiteral(Nodes, 'ident', i); }
+  = i:Label { return new Nodes.Ident(i); }
 Label
   = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return a + b; }
 
@@ -401,7 +396,7 @@ IntLiteral
   if (sign == '-') a = -a;
   if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
     throw new SyntaxError();
-  else return Helpers.constructLiteral(Nodes, 'int', a);
+  else return new Nodes.IntLiteral(a);
 }
 
 /*
@@ -416,7 +411,7 @@ IntSign
 */
 BoolLiteral
   = bool:('true' / 'false'){
-    return Helpers.constructLiteral(Nodes, 'bool', bool);
+    return new Nodes.BoolLiteral(bool);
   }
 
 /*
@@ -425,7 +420,7 @@ BoolLiteral
 */
 CharLiteral
   = c:("#"/ "'" (Character/[#]) "'"){
-    return Helpers.constructLiteral(Nodes, 'char', c);
+    return new Nodes.CharLiteral(c);
   }
 
 /*
@@ -434,7 +429,7 @@ CharLiteral
 */
 StrLiteral
   = '"' chars:Character* '"'{
-    return Helpers.constructLiteral(Nodes, 'string', chars.join(''));
+    return new Nodes.StringLiteral(chars);
   }
 
 /*
@@ -451,7 +446,7 @@ Character
 */
 ArrayLiteral
   = '[' Ws* elems:ArrayLiteralList? Ws* ']'{
-    return Helpers.constructLiteral(Nodes, 'array', elems);
+    return new Nodes.ArrayLitera;(elems);
   }
 
 ArrayLiteralList
@@ -470,7 +465,7 @@ ArrayLiteralListTail
    the null value. New pairs are created via the `newpair` call.
 */
 PairLiteral
-  = 'null'{ return Helpers.constructLiteral(Nodes, 'pair', null); }
+  = 'null'{ return new Nodes.PairLiteral('null'); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fundamentals
