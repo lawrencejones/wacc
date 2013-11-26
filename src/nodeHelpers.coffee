@@ -35,7 +35,7 @@ module?.exports =
     new statementLookup[key] values...
 
   
-  constructUnary : (Nodes, key, values) ->
+  constructUnary : (Nodes, key, value) ->
     unaryLookup =
       '!':     Nodes.NotOp
       '-':     Nodes.NegOp
