@@ -21,7 +21,7 @@
    zero or more functions.
 */
 Start
-  = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{ 
+  = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{
       if (main == '') return {};
       return main;
 }

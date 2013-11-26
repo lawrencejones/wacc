@@ -42,39 +42,35 @@
 path = require 'path'
 dependencies = require (path.join __dirname, 'dependencies')
 BaseNode = require (path.join __dirname, 'baseNode')
-module.exports ?= {}
+module?.exports ?= {}
 
 # Function to start node creation
 createNodes = (template, Parent = BaseNode) ->
   # For the className and the following specs of the child
   for own className,specs of template
     # Match against specs
-    [ps, ds, subclasses] = specs ? [[]]
+    [ps, ds, subclasses] = specs ?= [[]]
     # If just a list of deps then switch ps and ds
-    if specs.length is 1
-      ds = ps
-      ps = []
+    if specs.length is 1 then ds = ps; ps = []
+    # Set Child to be Parent initially
+    Child = Parent; if specs.length is 3
+      Child = class extends Parent
 
     # Generate next child
-    class Child extends Parent
+    class Child
       className: className
       paramKeys: ps.concat Parent::paramKeys ? []
       depKeys: ds.concat Parent::depKeys ? []
 
     # _CATEGORY_
     # UnaryOps: [ [params], [deps], {subclasses} ]
-    if specs.length is 1
-      return createNodes subclasses, Child
-    # _INLINED_
-    # FunctionApplication: [ [params], [deps] ]
-    # _TERMINAL_
-    # LenOp: [ [deps] ]
+    if specs.length == 3
+      createNodes subclasses, Child
     else
-      [ Child::depKeys,
-        Child::paramKeys ].map (a) -> a.sort()
       module.exports[className] = Child
-
-  return module.exports
+  
+  module.exports
+  
 
 
 # Function call to create nodes, initialises the node structure
@@ -152,7 +148,6 @@ createNodes
     FunctionApplication: [['args'], ['validCall']]
   ]
 
-
   Scopes: [
     [], ['symbolTable']
     # Formed by begin .. end syntax
@@ -172,6 +167,12 @@ createNodes
     ['ident', 'index'], []
     ArrayLookup: [['checkInBounds']] #check array exists index has to be int
     PairLookup: null #check exists 
+  ]
+
+  Types: [
+    ['ident', 'type'], []
+    Param: null        # int|bool|string|char
+    ArrayType: null    # int[][]
   ]
 
   Terminals: [
