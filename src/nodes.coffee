@@ -115,7 +115,7 @@ createNodes
 
   Statements: [
     ['right'], ['rhsDeclaredInTable']
-    ChecksNeeded [ 
+    ChecksNeeded: [ 
       [], ['typeCheck']
       Read: null
       Free: null
