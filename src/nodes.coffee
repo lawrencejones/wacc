@@ -91,7 +91,6 @@ createNodes
     NotOp: null
     BinOps: [
     ['left'], []
-      AssignEqOp: null
       DivOp: null
       ModOp: null
       MulOp: null
@@ -105,13 +104,11 @@ createNodes
       LessEqOp: null
       GreaterOp: null
       GreaterEqOp: null
-      Statement: null
-      Expression: null
     ]
   ]
 
   Statements: [
-    ['right'], []
+    ['right'], ['rhsDeclaredInTable']
     Skip: null
     Read: [['onlyString']]
     Free: [['operatorHasTypePair']]
@@ -120,7 +117,7 @@ createNodes
     Print: null
     Println: null
     Assignment: [
-      ['left'], ['typeEquality', 'rhsDeclaredInTable']
+      ['left'], ['typeEquality']
       Declaration: null
       NonDeclaration:[['lhsDeclaredInTable']]
     ]
