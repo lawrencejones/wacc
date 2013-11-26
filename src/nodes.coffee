@@ -39,70 +39,11 @@
   to be run on finishing construction of that specific node.
 ###
 
-dependencies = require (require 'path').join(__dirname, 'dependencies')
+path = require 'path'
+dependencies = require (path.join __dirname, 'dependencies')
+BaseNode = require (path.join __dirname, 'baseNode')
 module.exports ?= {}
 
-# Represents the base node
-class BaseNode
-
-  # Assign for the prototype base
-  depKeys: []; paramKeys: []
-  # Shared constructor for all nodes
-  # Takes children - an object that gives values for all children
-  #   eg. { lhs: <value>, rhs: <value> }
-  constructor: (arg) ->
-    # Initialise keys for children
-    (@children ?= {})[k] = null for k in @paramKeys
-    # For all dependency keys in @depKeys (proto)
-    for d in @depKeys
-      # Match on the dep key and params
-      [key, params...] = d.split /[(),]/g
-      # Call the dependencies
-      dependencies[key]?.call?(this, params...)
-    # Populate the children
-    this.populate(arg) if arg?
-    this
-
-  # Populates the children
-  # Takes an array of arguments, either...
-  #   [ {params_map} ]
-  # Or
-  #   value, value, value, ...
-  # Corresponding to param1, param2,etc
-  # POST - Must ensure all arguments are given
-  populateWithArgs: (args...) ->
-    # Copy into a hash
-    res = {}
-    populate (res[k] = args[i] for k,i in @paramKeys[0..(@args.length)])
-  populate: (children) ->
-    # If not an object then throw error
-    if typeof children is not 'object'
-      throw new Error "Populate expected param hash: #{children}"
-
-    # TODO - Catch error
-    #--* Now the children variable is an object
-    for own k,v of children
-      # If the key is in param keys then assign
-      @children[k] = v if @paramKeys.indexOf(k) != -1
-      
-    # Verify that the params are all filled
-    for k in @paramKeys
-      # Else throw error
-      if not @children[k]?
-        throw new Error 'Populate did not receive all args.'
-
-    # For all our post checks, run them
-    f.call?(this) for f in @posts ? []
-    this
-
-  # Default type answer
-  type: ->
-    btype or @left?.type?(tbl) or 'UNKNOWN'
-
-  # Final node verifications
-  verify: (tbl) ->
-    @checks.pop().call?(this, tbl) while @checks?[0]?
-    
 
 # Function to start node creation
 createNodes = (template, Parent = BaseNode) ->
@@ -221,11 +162,11 @@ createNodes
   Pairs: [
     [], []
     PairTypes: [
-      ['type1', 'type2'], [] 
+      ['type1', 'type2'], []
       PairType: null
     ]
     PairRhsd: [
-      ['value1', 'value2'] []
+      ['value1', 'value2'], []
       PairRhs: null
     ]
   ]

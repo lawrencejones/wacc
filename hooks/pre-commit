@@ -4,4 +4,8 @@ if not system 'make'
   puts 'Compilation failed.'
   exit 1
 end
+if not system 'coffee ./src/wacc.coffee'
+  puts 'Wacc module failed.'
+  exit 1
+end
 
