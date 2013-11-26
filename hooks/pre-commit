@@ -1,4 +1,12 @@
 #!/usr/bin/env ruby
+crrtBranch = (/(?<=\*\s).*/.match `git branch`)
+user = `echo $USER`.gsub "\n", ""
+if not ['lawrencejones', 'alanvey'].include? user
+  if crrtBranch != 'F_CodeGen'
+    puts 'Wrong branch!'
+    exit 1
+  end
+end
 
 if not system 'make'
   puts 'Compilation failed.'
