@@ -43,7 +43,7 @@ ProgramBody
 */
 Function
   = fsig:FunctionDeclaration (Ws* 'is' Ws+) ss:FunctionBody Ws+ 'end' Ws*{
-    return new Nodes.Function(ss, fsig.ident, fsig.type, fsig.typeSignature);
+    return new Nodes.Function(ss, fsig.ident, fsig.returnType, fsig.paramList);
   }
 
 FunctionBody
@@ -52,7 +52,7 @@ FunctionBody
 FunctionDeclaration
   = t:Type Ws+ i:Label Ws* ts:TypeSignature{
     if (ts == '') ts = null;
-    return {'ident': i, 'type':t, 'typeSignature':ts};
+    return {'ident': i, 'returnType':t, 'paramList':ts};
   }
 
 TypeSignature

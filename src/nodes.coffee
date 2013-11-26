@@ -129,7 +129,7 @@ createNodes
   ]
 
   Scopes: [
-    ['body', 'symbolTable'], ['symbolTable']
+    ['body'], ['symbolTable']
     Scope: null
     Programs: [
       ['functionDefs'], ['validSemantics']
