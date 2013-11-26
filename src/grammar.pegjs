@@ -96,9 +96,9 @@ Param
 */
 Statement
   = a:StatementType b:StatementTail? {
-      if (b == '') b = null;
-      return new Nodes.Statement({left: a, right: b});
-    }
+    if (b == '') b = null;
+    return new Nodes.Statement({left: a, right: b});
+  }
 
 StatementType
   = a:'skip' { 
@@ -421,7 +421,11 @@ IntLiteral
   var a = parseInt(digits.join(''),10);
   if (sign == '-') a = -a;
   if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
-    throw new SyntaxError();
+  {
+    e = new SyntaxError('Integer between ±2^31', a);
+    e.line = line(); e.column = column();
+    throw e;
+  }
   else return new Nodes.IntLiteral({value: a});
 }
 
@@ -464,7 +468,7 @@ StrLiteral
 */
 Character
   = [^\\\'\"]
-  / '\\' EscapedChar
+  / EscapedChar
 
 /*
    Defines the array literal notation. Zero or more elements demarkated
@@ -515,7 +519,7 @@ Digit
    used in conjunction with a backslash.
 */
 EscapedChar
-  = '0'/ 'b'/ 't' / 'n' / 'f' / 'r' / '"' / "'" / '\\'
+  = '\\' c:[0btnfr"'\\] { return '\\' + c; }
 
 /*
    Defines the different characters that may represent whitespace.

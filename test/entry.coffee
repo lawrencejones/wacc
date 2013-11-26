@@ -72,7 +72,7 @@ validSyntax = (file) ->
       filename: file
     }
   catch err
-    if err?.name == 'SyntaxError'
+    if err.name == 'SyntaxError'
       noOfFailed++
       return err.mssg
     else throw err
@@ -89,10 +89,24 @@ invalidSyntax = (file) ->
       returnMessage: false
     }
   catch err
-    return false
+    if err.name == 'SyntaxError'
+      return false
   noOfFailed++
   return file
 
+# Checks for a semantic error in the given filename
+invalidSemantic = (file) ->
+  try
+    src = fs.readFileSync(file, 'utf-8')
+    wacc.parse src, {
+      verbose: false
+      returnMessage: false
+    }
+  catch err
+    if err.name == 'SemanticError'
+      return false
+  noOfFailed++
+  return file
 
 # Prints the formatted test results
 printResults = ->
@@ -123,6 +137,13 @@ printResults = ->
     console.log "\n#{('      ' + f.split('/').pop() for f in failed).join('\n')}\n"
     console.log '\x1b[0m'
 
+  # Invalid semantics
+  console.log "\nTesting semantics for invalid examples..."
+  iterateTests results.semantic.invalid, ((t) -> typeof(t) == 'string'), (failed) ->
+    console.log '\x1b[31m'
+    console.log "\n#{('      ' + f.split('/').pop() for f in failed).join('\n')}\n"
+    console.log '\x1b[0m'
+
 
 # Runs tests using the given wacc spec examples
 # Returns number of failed test cases
@@ -132,7 +153,8 @@ testExamples = (callback) =>
   # Hooks for the different tests
   callback ?= printResults
   testFiles 'valid', validSyntax, results.syntax.valid, ->
-    testFiles 'invalid/syntaxErr', invalidSyntax, results.syntax.invalid, callback
+    testFiles 'invalid/syntaxErr', invalidSyntax, results.syntax.invalid, ->
+      testFiles 'invalid/semanticErr', invalidSemantic, results.semantic.invalid, callback
 
 
 # For watching and rerunning test suite

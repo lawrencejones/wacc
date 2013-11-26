@@ -64,6 +64,7 @@ module?.exports = class BaseNode
 
   # Final node verifications
   verify: (tbl) ->
+    console.log "Verifying #{@className} node"
     @checks.pop().call?(this, tbl) while @checks?[1]?
     
 
