@@ -42,75 +42,72 @@
 dependencies = require (require 'path').join(__dirname, 'dependencies')
 module.exports ?= {}
 
-createNodes = (template, parent = (@params = [], @deps = []) ->) ->
+# Represents the base node
+class BaseNode
+  constructor: (params...) ->
+    @className = this.constructor.className
+    for d in @deps
+      [key, params...] = d.split /[(),]/g
+      dependencies[key]?.call?(this, params...)
+    @type ?= (tbl) ->
+      @btype or @left?.type?(tbl) or 'UNKNOWN'
+    this.populate(params...) if params?
+    this
+  populate: ->
+    for k, i in @params
+      this[k] = arguments[i]
+      this[k].parent = @ if this[k]?.className?
+    f.call?(this) for f in @posts ? []
+    this
+  verify: (tbl) ->
+    @checks.pop().call?(this, tbl) while @checks?[0]?
+
+# Function to start node creation
+createNodes = (template, Parent = BaseNode) ->
 
   # For the className and the following specs of the child
   for own className,specs of template
-    specs ?= [[]]
-    obj = class extends parent
-      @className: className
-      constructor: (params...) ->
-        @className = this.constructor.className
-        dependencies[f]?.call?(this) for f in @deps
-        @type ?= (tbl) ->
-          @btype or @left?.type?(tbl) or 'UNKNOWN'
-        this.populate(params...) if params?
-        this
-      populate: ->
-        for k, i in @params
-          this[k] = arguments[i]
-          this[k].parent = @ if this[k]?.className?
-        f.call?(this) for f in @posts ? []
-        this
-      verify: (tbl) ->
-        @checks.pop().call?(this, tbl) while @checks?[0]?
-
+    # Create new class for our child node
+    Child = class extends Parent
+      @className = className
     # If a category
     if specs.length > 1
       [ps, deps, subclasses] = specs
-      obj::params = (obj?.__super__?.params ? []).concat ps
-      obj::deps = (obj?.__super__?.deps ? []).concat deps
-      createNodes subclasses, obj
+      [Child::params, Child::deps] = [ps, deps]
+      createNodes subclasses, Child
     # If a final node
     else
-      obj::deps = (obj?.__super__?.deps ? []).concat specs[0]
-      module.exports[className] = obj
+      Child::deps = specs?[0] ? []
+      module.exports[className] = Child
 
   return module.exports
 
+
 # Function call to create nodes, initialises the node structure
 createNodes
-  # All infix operations
-
-  Ops: [
-    ['right'], ['typeCheck']
-    NegOp: null
-    LenOp: null
-    OrdOp: null
-    ToIntOp: null
-    NotOp: null
-    BinOps: [
-      ['left'], []
-      EqOp: null
-      NotEqOp: null
-      MulOp: null
-      AddOp: null
-      SubOp: null
-      LessOp: null
-      LessEqOp: null
-      GreaterOp: null
-      GreaterEqOp: null
-      IntOps: [
-        [], ['noDivZero']
-        DivOp: null
-        ModOp: null
-      ]
-      BoolOps: [
-        [], []
-        AndOp: null
-        OrOp: null
-      ]
-    ]
+  UnaryOps: [
+    ['rhs'], []
+    NegOp: null        # int  -> int
+    LenOp: null        # str  -> int
+    ToIntOp: null      # char -> int
+    OrdOp: null        # int  -> char
+    NotOp: null        # bool -> bool
+  ]
+  BinOps: [
+    ['lhs', 'rhs'], []
+    MulOp: null        # int  -> int  -> int
+    AddOp: null        # int  -> int  -> int
+    SubOp: null        # int  -> int  -> int
+    DivOp: null        # int  -> int  -> int
+    ModOp: null        # int  -> int  -> int
+    LessOp: null       # int  -> int  -> bool
+    LessEqOp: null     # int  -> int  -> bool 
+    GreaterOp: null    # int  -> int  -> bool
+    GreaterEqOp: null  # int  -> int  -> bool
+    AndOp: null        # bool -> bool -> bool
+    OrOp: null         # bool -> bool -> bool
+    EqOp: null         # int|bool -> int|bool -> bool
+    NotEqOp: null      # int|bool -> int|bool -> bool
   ]
 
   Statements: [
@@ -166,15 +163,15 @@ createNodes
 
   Terminals: [
     ['type', 'value'], []
-    ident: null
-    intLiteral: null
-    boolLiteral: null
-    charLiteral: null
-    stringLiteral: null
-    arrayLiteral: null
+    Ident: null
+    IntLiteral: null
+    NoolLiteral: null
+    CharLiteral: null
+    StringLiteral: null
+    ArrayLiteral: null
     Pair: [
       ['secondType', 'secondValue'], []
-      pairLiteral: null
+      PairLiteral: null
     ]
   ]
 

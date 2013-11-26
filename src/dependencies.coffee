@@ -12,8 +12,20 @@ SymbolTable = require path.join(__dirname, 'symbolTable')
 
 module.exports =
   
-  #TODO:......for 'ops', will check correct types
-  typeCheck: ->
+  #TOD  # Takes all potential lhs types, finished with the return type
+  # Ex params - int, bool, bool
+  typeResolution: (childTypes...) ->
+    (@checks ?= []).push (tbl) ->
+      ltype = (c?.type?(tbl) for c in [@rhs, @lhs]).reduce (a,b) ->
+        (a if (b ?= a) == a)
+      for t in lhsTypes
+        return true if t is ltype
+
+  # Takes the return type
+  returnType: (rtype) ->
+    # Set this node type to return the rtype (axiom)
+    @type = -> rtype
+
   
   #TODO:...... check rhs is in the symbol table
   rhsDeclaredInTable: ->
@@ -21,7 +33,7 @@ module.exports =
   #TODO:...... same as for rhs above
   lhsDeclaredInTable: ->
 
-  #TODO:.....for assigning, need to check boths left and right have
+  #TODO:.....for assigning, need to check boths lhs and rhs have
   #the same type
   typeEquality: ->
 
@@ -48,8 +60,8 @@ module.exports =
   # Initiates verification of the two/one leaf/es
   childVerification: ->
     (@checks ?= []).push (tbl) ->
-      @left?.verify?(tbl)
-      @right?.verify?(tbl)
+      @lhs?.verify?(tbl)
+      @rhs?.verify?(tbl)
 
   # Means nodes are required to register or verify themselves against
   # the symbol table, and any type questions will need to be referenced
@@ -60,11 +72,11 @@ module.exports =
 
   typeEquality: ->
     (@checks ?= []).push (tbl) ->
-      if not (@left? and @right?)
+      if not (@lhs? and @rhs?)
         throw new Error 'Missing operands'
-      if @left?.type(tbl) != @right?.type(tbl)
-        console.log @left.type(tbl)(tbl)
-        console.log "Mismatched types #{@left.type(tbl)}/#{@right.type(tbl)}"
+      if @lhs?.type(tbl) != @rhs?.type(tbl)
+        console.log @lhs.type(tbl)(tbl)
+        console.log "Mismatched types #{@lhs.type(tbl)}/#{@rhs.type(tbl)}"
         
 
   # Returns the basic type for literals
