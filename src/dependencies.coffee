@@ -39,13 +39,16 @@ module.exports =
 
   # Determines the return type for a unary
   unaryReturn: ->
-    @type = -> {
-      NegOp: 'int'
-      LenOp: 'int'
-      ToIntOp: 'int'
-      OrdOp: 'char'
-      NotOp: 'bool'
-    }[@className]
+    @type = ->
+      basic = {
+        NegOp: 'int'
+        LenOp: 'int'
+        ToIntOp: 'int'
+        OrdOp: 'char'
+        NotOp: 'bool'
+      }[@className]
+      basic or (-> @children.rhs.type())
+
 
   # Verifies that all children have the same type
   typeEquality: ->
