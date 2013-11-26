@@ -114,24 +114,25 @@ createNodes
     ['right'], ['rhsDeclaredInTable']
     ChecksNeeded: [ 
       [], ['typeCheck']
-      Read: null
-      Free: null
+      Read: null #can only be either a program variable, an array elem or a pair elem
+      Free: null #must be given expression of type pair
       Return: null
     ]
     Skip: null
-    Exit: null
-    Print: null
-    Println: null
+    Exit: null #takes an expression
+    Print: null   #prints can be given any type...
+    Println: null #...............................
     Assignment: [
       ['left'], ['typeEquality']
-      Declaration: null
-      NonDeclaration:[['lhsDeclaredInTable']]
+      Declaration: null #add in table and check type equality
+      NonDeclaration:[['lhsDeclaredInTable']] #check in table and type equality and then update it in table
     ]
   ]
 
   FunctionApplications: [
     ['ident', 'paramList'], ['validParams']
-    FunctionApplication: null
+    FunctionApplication: null #check function exists and params match
+    #check return type against function return type
   ]
 
   Scopes: [
@@ -147,7 +148,7 @@ createNodes
     ]
     FlowConstructs: [
       ['condition'], ['validCondition']
-      While: null
+      While: null #int|bool -> int|bool -> bool
       Conditionals: [
         ['elseBody'], []
         Conditional: null
@@ -156,22 +157,25 @@ createNodes
   ]
 
   Lookups: [
-    ['ident', 'index'], []
-    ArrayLookup: [['checkInBounds']]
-    PairLookup: null
+    ['ident', 'index', 'length'], []
+    ArrayLookup: [['checkInBounds']] #check array exists index has to be int
+    PairLookup: null #check exists 
   ]
 
   Terminals: [
     ['type', 'value'], []
     Ident: null
     IntLiteral: null
-    NoolLiteral: null
+    BoolLiteral: null
     CharLiteral: null
     StringLiteral: null
     ArrayLiteral: null
-    Pair: [
-      ['secondType', 'secondValue'], []
-      PairLiteral: null
-    ]
+  ]
+
+  Pairs: [
+    PairType
+    ['type1', 'type2'], [] #
+    PairRhs
+    ['value1', 'value2'] []
   ]
 
