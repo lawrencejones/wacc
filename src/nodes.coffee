@@ -44,40 +44,86 @@ module.exports ?= {}
 
 # Represents the base node
 class BaseNode
-  constructor: (params...) ->
-    @className = this.constructor.className
-    for d in @deps
+
+  # Assign for the prototype base
+  depKeys: []; paramKeys: []
+  # Shared constructor for all nodes
+  # Takes children - an object that gives values for all children
+  #   eg. { lhs: <value>, rhs: <value> }
+  constructor: (arg) ->
+    # Initialise keys for children
+    (@children ?= {})[k] = null for k in @paramKeys
+    # For all dependency keys in @depKeys (proto)
+    for d in @depKeys
+      # Match on the dep key and params
       [key, params...] = d.split /[(),]/g
+      # Call the dependencies
       dependencies[key]?.call?(this, params...)
-    @type ?= (tbl) ->
-      @btype or @left?.type?(tbl) or 'UNKNOWN'
-    this.populate(params...) if params?
+    # Populate the children
+    this.populate(arg) if arg?
     this
-  populate: ->
-    for k, i in @params
-      this[k] = arguments[i]
-      this[k].parent = @ if this[k]?.className?
+
+  # Populates the children
+  # Takes an array of arguments, either...
+  #   [ {params_map} ]
+  # Or
+  #   value, value, value, ...
+  # Corresponding to param1, param2,etc
+  # POST - Must ensure all arguments are given
+  populateWithArgs: (args...) ->
+    # Copy into a hash
+    res = {}
+    populate (res[k] = args[i] for k,i in @paramKeys[0..(@args.length)])
+  populate: (children) ->
+    # If not an object then throw error
+    if typeof children is not 'object'
+      throw new Error "Populate expected param hash: #{children}"
+
+    # TODO - Catch error
+    #--* Now the children variable is an object
+    for own k,v of children
+      # If the key is in param keys then assign
+      @children[k] = v if @paramKeys.indexOf(k) != -1
+      
+    # Verify that the params are all filled
+    for k in @paramKeys
+      # Else throw error
+      if not @children[k]?
+        throw new Error 'Populate did not receive all args.'
+
+    # For all our post checks, run them
     f.call?(this) for f in @posts ? []
     this
+
+  # Default type answer
+  type: ->
+    btype or @left?.type?(tbl) or 'UNKNOWN'
+
+  # Final node verifications
   verify: (tbl) ->
     @checks.pop().call?(this, tbl) while @checks?[0]?
+    
 
 # Function to start node creation
 createNodes = (template, Parent = BaseNode) ->
 
   # For the className and the following specs of the child
   for own className,specs of template
+    specs ?= [[]]
     # Create new class for our child node
     Child = class extends Parent
-      @className = className
+      className: className
     # If a category
     if specs.length > 1
       [ps, deps, subclasses] = specs
-      [Child::params, Child::deps] = [ps, deps]
+      Child::paramKeys = ps.concat Parent::paramKeys ? []
+      Child::depKeys = deps.concat Parent::depKeys ? []
       createNodes subclasses, Child
     # If a final node
     else
-      Child::deps = specs?[0] ? []
+      Child::depKeys = Parent::depKeys.concat specs[0] ? []
+      [ Child::depKeys,
+        Child::paramKeys ].map (a) -> a.sort()
       module.exports[className] = Child
 
   return module.exports
@@ -112,7 +158,7 @@ createNodes
 
   Statements: [
     ['right'], ['rhsDeclaredInTable']
-    ChecksNeeded: [ 
+    ChecksNeeded: [
       [], ['typeCheck']
       Read: null
       Free: null
