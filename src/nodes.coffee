@@ -83,33 +83,33 @@ createNodes
   # All infix operations
 
   Ops: [
-    ['right'], ['type']
-    NegOp: [['typeInt']]
-    LenOp: [['typeString']]
-    OrdOp: [['typeInt']]
-    ToIntOp: [['typeChar']]
-    NotOp: [['typeBool']]
+    ['right'], ['rightType']
+    NegOp: null
+    LenOp: null
+    OrdOp: null
+    ToIntOp: null
+    NotOp: null
     BinOps: [
-      ['left'], []
+      ['left'], ['leftType']
+      EqOp: null
+      NotEqOp: null
+      MulOp: null
+      AddOp: null
+      SubOp: null
+      LessOp: null
+      LessEqOp: null
+      GreaterOp: null
+      GreaterEqOp: null
       IntOps: [
-        ['typeBothInt']
-        DivOp: ['rightNotZero']
-        ModOp: ['rightNotZero']
-        MulOp: null
-        AddOp: null
-        SubOp: null
-        LessOp: null
-        LessEqOp: null
-        GreaterOp: null
-        GreaterEqOp: null
+        [], ['noDivZero']
+        DivOp: null
+        ModOp: null
       ]
       BoolOps: [
-        ['typeBothBool']
+        [], [['typeBothBool']]
         AndOp: null
         OrOp: null
       ]
-      EqOp: null
-      NotEqOp: null
     ]
   ]
 
@@ -156,7 +156,7 @@ createNodes
   ]
 
   Lookups: [
-    ['ident', 'index'], ['lookUpTable']
+    ['ident', 'index'], []
     ArrayLookup: [['checkInBounds']]
     PairLookup: null
   ]
