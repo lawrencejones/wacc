@@ -8,29 +8,34 @@
 
 module?.exports =
   constructLiteral : (Nodes, key, value) ->
-    literalLookup =
-      string: Nodes.StringLiteral
-      char:   Nodes.CharLiteral
+    LiteralLookup =
+      ident:  Nodes.ident
       int:    Nodes.IntLiteral
       bool:   Nodes.BoolLiteral
+      char:   Nodes.CharLiteral
+      string: Nodes.StringLiteral
       array:  Nodes.ArrayLiteral
       pair:   Nodes.PairLiteral
     
-    new literalLookup[key]  value
+    new LiteralLookup[key]  value
+
   
-  constructStatement : (Nodes, key, value) ->
+  constructStatement : (Nodes, key, values...) ->
     statementLookup =
-      skip:    Nodes.Skip
-      print:   Nodes.Print
-      println: Nodes.Println
-      read:    Nodes.Read
-      free:    Nodes.Free
-      return:  Nodes.Return
-      exit:    Nodes.Exit
+      skip:           Nodes.Skip
+      read:           Nodes.Read
+      free:           Nodes.Free
+      return:         Nodes.Return
+      exit:           Nodes.Exit
+      print:          Nodes.Print
+      println:        Nodes.Println
+      Declaration:    Nodes.Declaration
+      NonDeclaration: Nodes.NonDeclaration
   
-    new statementLookup[key] value
+    new statementLookup[key] values...
+
   
-  constructUnary : (Nodes, key, value) ->
+  constructUnary : (Nodes, key, values) ->
     unaryLookup =
       '!':     Nodes.NotOp
       '-':     Nodes.NegOp
@@ -57,3 +62,11 @@ module?.exports =
       '||':  Nodes.OrOp
   
     new binaryLookup[key] first, second
+
+  constructLookup : (Nodes, key, ident, index) ->
+    lookupLookup = 
+      array: Nodes.ArrayLookup
+      pair:  Nodes.PairLookup
+
+    new lookupLookup[key] ident, index
+
