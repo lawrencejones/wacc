@@ -106,7 +106,7 @@ createNodes
         ModOp: null
       ]
       BoolOps: [
-        [], [['typeBothBool']]
+        [], []
         AndOp: null
         OrOp: null
       ]
@@ -115,10 +115,13 @@ createNodes
 
   Statements: [
     ['right'], ['rhsDeclaredInTable']
+    ChecksNeeded: [ 
+      [], ['typeCheck']
+      Read: null
+      Free: null
+      Return: null
+    ]
     Skip: null
-    Read: [['onlyString']]
-    Free: [['operatorHasTypePair']]
-    Return: [['sameTypeAsFunction']]
     Exit: null
     Print: null
     Println: null
