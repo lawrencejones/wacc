@@ -11,7 +11,7 @@ module?.exports = class SymbolTable
   # Constructs a symbol table class with a reference
   # to the node that it is attached to.
   constructor: (@owner) ->
-    (@tbl = {}).__proto__ = @owner.symbolTable
+    (@tbl = {}).__proto__ = @owner?.tbl
 
   # General verification, returns type if successful
   verify: (node) ->
