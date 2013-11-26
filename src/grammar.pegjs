@@ -30,7 +30,7 @@ ProgramBlock
   = ('begin' Ws+ body:ProgramBody Ws* 'end'){ return body; }
 
 ProgramBody
-  = fs:(Function/Comment)* ss:Statement{ return new Nodes.Program((fs || []), ss); }
+  = fs:(Function/Comment)* ss:Statement{ return new Nodes.Program((ss, fs || [])); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -43,7 +43,8 @@ ProgramBody
 */
 Function
   = fsig:FunctionDeclaration (Ws* 'is' Ws+) ss:FunctionBody Ws+ 'end' Ws*{
-    return new Nodes.Function(ss, fsig.ident, fsig.returnType, fsig.paramList);
+    fsig.statement = ss;
+    return fsig;
   }
 
 FunctionBody
@@ -52,7 +53,7 @@ FunctionBody
 FunctionDeclaration
   = t:Type Ws+ i:Label Ws* ts:TypeSignature{
     if (ts == '') ts = null;
-    return {'ident': i, 'returnType':t, 'paramList':ts};
+    return new Nodes.FunctionDeclaration(i, ts, t, null);
   }
 
 TypeSignature
@@ -79,7 +80,7 @@ ParamListTail
    Defines a single parameter token.
 */
 Param
-  = t:Type Ws+ i:Label{ return new Nodes.Param(i,t); }
+  = t:Type Ws+ i:Label{ throw new Error("Create a param node"); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WACC Statements
@@ -98,12 +99,14 @@ Statement
 
 StatementType
   = a:'skip'{ 
-      return Helpers.constructStatement(Nodes, a, null);
+      return new Nodes.Skip();
     }
   / key:('println' / 'print' / 'free' / 'read' / 'exit') Ws+ e:Expr{
       return Helpers.constructStatement(Nodes, key, e);
     }
-  / Scope / Conditional / While / Assignment
+  / item:(Scope / Conditional / While / Assignment){
+    return item;
+  }
 
 Scope
   = 'begin' Ws+ s:Statement* Ws* 'end' {
@@ -112,7 +115,7 @@ Scope
        
 ReturnStatement
   = a:(Statement Ws* ';' Ws+)? 'return' Ws+ e:Expr{
-      var ret = new Nodes.Statement(new Nodes.Return(e));
+      var ret = new Nodes.Statement(new Nodes.Return(e), null);
       if (a != '') {
         return a.right = ret;
       } return ret;
@@ -120,13 +123,13 @@ ReturnStatement
 
 Assignment
   = p1:ArrayType Ws+ Label Ws* '=' Ws* p2:ArrayLiteral{
-      return new Nodes.AssignEqOp(p1, p2);
+      return new Nodes.Decleration(p1, p2);
     }
   / p1:Param Ws* '=' Ws* p2:AssignRhs{
-      return new Nodes.AssignEqOp(p1, p2);
+      return new Nodes.Decleration(p1, p2);
     }
   / p1:AssignLhs Ws* '=' Ws* p2:AssignRhs{
-      return new Nodes.AssignEqOp(p1, p2);
+      return new Nodes.Assignment(p1, p2);
     }
 
 Conditional
@@ -159,9 +162,9 @@ StatementTail
    left of the assignment operator.
 */
 AssignLhs
-  = ArrayElem
-  / PairElem
-  / Ident
+  = lhs:(ArrayElem / PairElem / Ident){
+    return lhs;
+  }
 
 /*
    Assign Right Hand Side. Defines what is allowed to appear on the right
@@ -169,12 +172,14 @@ AssignLhs
 */
 AssignRhs
   = 'call' Ws+ label:Ident '(' Ws* args:ArgList? Ws* ')'{
-    return new Nodes.FunctionApplication(label, args);
+    return new Nodes.FunctionApplication(args, label);
   }
-  / 'newpair' Ws* '(' Ws* Expr Ws* ',' Ws* Expr Ws* ')' Ws*
-  / PairElem
-  / ArrayLiteral
-  / Expr
+  / 'newpair' Ws* '(' Ws* v1:Expr Ws* ',' Ws* v2:Expr Ws* ')' Ws*{
+    return new Nodes.PairRhs(v1, v2);
+  }
+  / rhs:(PairElem / ArrayLiteral / Expr){
+    return rhs;
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function Invokation
@@ -261,26 +266,25 @@ Expr
   = left:ExprType tail:ExprTail?{
     if (tail != '')
     {
-      return new Helpers.constructBinary(Nodes, tail.op, left, tail.operand);
+      return new Helpers.constructBinary(Nodes, tail.op, left, tail.exp);
     }
     return left;
   }
 
 ExprTail
-  = (Ws* op:BinOp Ws* right:Expr){ return {'op': op, 'operand': right}; }
+  = (Ws* op:BinOp Ws* exp:Expr)
 
 ExprType
   = '(' Ws* e:Expr Ws* ')'{
     return e;
   }
-  / ArrayElem / PairElem
-  / lit:(CharLiteral / StrLiteral / PairLiteral / IntLiteral / BoolLiteral){
-    return Helpers.constructLiteral(Nodes, lit[0], lit[1]);
+  / lit:(ArrayElem / PairElem / CharLiteral / StrLiteral / 
+        PairLiteral / IntLiteral / BoolLiteral / Ident){
+    return lit;
   }
   / op:UnaryOp Ws* value:Expr{
     return Helpers.constructUnary(Nodes, op, value);
   }
-  / i:Ident { return i; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -322,7 +326,8 @@ PairType
 */
 PairElem
   = a:PairAccessor Ws+ e:Expr{
-    throw new Error("Add PairElem (fst/snd) to Nodes");
+    if(a == 'fst') {return new Nodes.FstOp(e);} 
+    else {return new Nodes.SndOp(e);}
   }
 
 PairAccessor
@@ -446,7 +451,7 @@ Character
 */
 ArrayLiteral
   = '[' Ws* elems:ArrayLiteralList? Ws* ']'{
-    return new Nodes.ArrayLitera;(elems);
+    return new Nodes.ArrayLiteral(elems);
   }
 
 ArrayLiteralList

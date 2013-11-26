@@ -17,6 +17,16 @@ module?.exports =
       'toInt': Nodes.ToIntOp
   
     new unaryLookup[key] value
+
+  constructStatement : (Nodes, key, value) ->
+    statementLookup =
+      'println':  Nodes.Println
+      'print':    Nodes.Print
+      'free':     Nodes.Free
+      'read':     Nodes.Read
+      'exit':     Nodes.Exit
+  
+    new statementLookup[key] value
   
   constructBinary : (Nodes, key, first, second) ->
     binaryLookup =
