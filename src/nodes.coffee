@@ -87,6 +87,11 @@ createNodes
     LenOp: [['typeRestriction(string)']]    # str  -> int
     ToIntOp: [['typeRestriction(char)']]    # char -> int
     NotOp: [['typeRestriction(bool)']]      # bool -> bool
+    PairOps: [
+      [], ['typeRestriction(pair)']
+      FstOp: null
+      SndOp: null
+    ]
   ]
 
   BinOps: [
@@ -164,7 +169,7 @@ createNodes
   ]
 
   Lookups: [
-    ['ident', 'index', 'length'], []
+    ['ident', 'index'], []
     ArrayLookup: [['checkInBounds']] #check array exists index has to be int
     PairLookup: null #check exists 
   ]
@@ -179,19 +184,14 @@ createNodes
       CharLiteral: null
       StringLiteral: null
       ArrayLiteral: null
+      PairLiteral: null
     ]
   ]
 
   Pairs: [
     [], []
-    PairTypes: [
-      ['type1', 'type2'], []
-      PairType: null
-    ]
-    PairRhss: [
-      ['value1', 'value2'], []
-      PairRhs: null
-    ]
+    PairType: [['t1', 't2'], []]
+    PairRhs:  [['v1', 'v2'], []]
   ]
   
 
