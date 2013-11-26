@@ -119,8 +119,6 @@ createNodes
     Exit: null
     Print: null
     Println: null
-    IfElse: null
-    While: null
     Assignment: [
       ['left'], ['typeEquality', 'rhsDeclaredInTable']
       Declaration: null
@@ -136,21 +134,21 @@ createNodes
   Scopes: [
     ['body', 'symbolTable'], ['symbolTable']
     Scope: null
-    Functions: [
-      ['ident', 'returnType', 'paramList'], []
-      Function: null
-    ]
     Programs: [
       ['functionDefs'], ['validSemantics']
       Program: null
     ]
+    Functions: [
+      ['ident', 'returnType', 'paramList'], []
+      Function: null
+    ]
     FlowConstructs: [
       ['condition'], ['validCondition']
+      While: null
       Conditionals: [
         ['elseBody'], []
         Conditional: null
       ]
-      While: null
     ]
   ]
 
