@@ -22,7 +22,7 @@
 */
 Start
   = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{
-      return main;
+      main.verify();
   }
 
 ProgramBlock

@@ -16,16 +16,13 @@ module.exports =
   # If given this dependency then the said node has a symbolTable field
   # which shall be used to verify scope queries
   symbolTable: ->
-    constructTable = (tbl) ->
+    (@checks ?= []).unshift (tbl) ->
       @symbolTable = new SymbolTable(tbl)
-    switch @className
-      when 'Program' then (@posts ?= []).unshift constructTable
-      else (@checks ?= []).unshift constructTable
 
   # Valid semantic check for entire program
   validSemantics: ->
-    (@posts ?= []).push ->
-      @children.statement?.verify?(@symbolTable)
+    (@checks ?= []).push ->
+      c.verify(@symbolTable) for c in @children when c.className == 'Statement'
 
   # Calls verify on it's children
   # NB - This function is high priority, must be at front of checks
@@ -49,28 +46,30 @@ module.exports =
 
   # Determines the return type for a unary
   unaryReturn: ->
+    t = {
+      NegOp: 'int'
+      LenOp: 'int'
+      ToIntOp: 'int'
+      OrdOp: 'char'
+      NotOp: 'bool' }[@className]
     @type = (tbl) ->
-      basic = {
-        NegOp: 'int'
-        LenOp: 'int'
-        ToIntOp: 'int'
-        OrdOp: 'char'
-        NotOp: 'bool'
-      }[@className]
+      # If not verified then verify
+      @verify(tbl); t
 
   # Ident scoping check
   scopingVerification: ->
     @type = (tbl) ->
       type = tbl.verify @
-      @type = -> type
+      (@type = -> type); type
 
   # Verifies that all children have the same type
   typeEquality: (fields...) ->
-    @type = (tbl) ->
-      eq = (@children[k].type?(tbl) for k in fields).reduce (t1,t2) ->
-        if t2 == t2 then t2 else null
-      if not eq
-        throw new SemanticError 'Type equality failed', @
+    (@checks ?= []).push (tbl) ->
+      eq = (@children[k].type(tbl) for k in fields when @children[k]?.type?)
+      eq.reduce (t1,t2) ->
+        if t1 != t2
+          throw new SemanticError "Type equality failed: #{t1} != #{t2}"
+        else t2
 
   # Configures function app and decl
   functionParams: ->

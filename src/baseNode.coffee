@@ -66,10 +66,9 @@ module?.exports = class BaseNode
 
   # Final node verifications
   verify: (tbl) ->
-    console.log "Verifying #{@className} node"
-    console.log tbl
     if not @verified
-      c.call?(this, tbl) for c in @checks
+      for c in @checks
+        c.call?(this, tbl)
       @verified = true
     
 

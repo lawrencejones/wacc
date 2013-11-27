@@ -15,11 +15,12 @@ module?.exports = class SymbolTable
 
   # General verification, returns type if successful
   verify: (node) ->
-    console.log 'Verifying'
-    if node?.type?
-      @declareVar node.label, node.type
-    else if node?.label?
-      @useVar node.label
+    # TODO - Support functions
+    switch node.className
+      when 'Param'
+        return @declareVar(node.label, node.children.typeSig)
+      when 'Ident'
+        return @useVar(node.label)
 
   # Used to declare variable
   declareVar: (symbol, type) ->

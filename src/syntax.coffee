@@ -32,6 +32,7 @@ parse = (src, opt = {}) ->
       err.mssg = mssg
       throw err
     else if err.name == 'SemanticError'
+      console.log err.mssg
       throw err
     else
       err.mssg = "Error processing file #{opt.filename}\n"

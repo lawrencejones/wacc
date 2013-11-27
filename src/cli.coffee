@@ -109,9 +109,9 @@ run = (err, filename, src, options) ->
         console.log()
     catch err
       # If error then exit
+      console.error "Terminating due to #{err.name} error."
       throw err
-      console.error 'Terminating due to syntax error.'
-      process.exit 100
+      process.exit 1
     generateCode(tree, 'Code Generation')
 
   # Assembly code generation
@@ -127,20 +127,6 @@ run = (err, filename, src, options) ->
       # TODO - Implement code optimisations
       code = optimiseCode(code) unless options['--no-optimisation']
       generateMachine(code, 'Generate Machine Code')
-  
-  # Compilation
-  generateMachine = \
-    unsupported || (code) ->
-      return if options['--assembly']
-      # TODO - Implement machine code generation
-      executeBinary(filename, 'Code Execution')
-
-  # Execution
-  executeBinary = \
-    unsupported || (filename) ->
-      return unless options['--eval']
-      # TODO - Implement binary execution
-      console.log "Finished executing file '#{filename}'"
 
   parse src, filename
 
