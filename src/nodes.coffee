@@ -136,7 +136,7 @@ createNodes
   ]
 
   Functions: [
-    ['ident'], ['functionParams']
+    ['label'], ['functionParams']
     FunctionDeclaration: [
       ['paramList', 'rtype', 'statement'], ['symbolTable']
     ]
@@ -159,7 +159,7 @@ createNodes
   ]
 
   Lookups: [
-    ['ident', 'index'], []
+    ['label', 'index'], []
     ArrayLookup: [['checkInBounds']] #check array exists index has to be int
     PairLookup: null #check exists 
   ]
