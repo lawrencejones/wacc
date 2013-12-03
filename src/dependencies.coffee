@@ -66,10 +66,10 @@ module.exports =
   typeEquality: (fields...) ->
     (@checks ?= []).push (tbl) ->
       eq = (@children[k].type(tbl) for k in fields when @children[k]?.type?)
-      eq.reduce (t1,t2) ->
+      eq.reduce ((t1,t2) ->
         if t1 != t2
           throw new SemanticError "Type equality failed: #{t1} != #{t2}"
-        else t2
+        else t2), true
 
   # Configures function app and decl
   functionParams: ->
