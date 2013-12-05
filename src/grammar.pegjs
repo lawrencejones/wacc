@@ -22,7 +22,9 @@
 */
 Start
   = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{
-      main.verify();
+      if (main != '')
+        main.verify();
+      return main;
   }
 
 ProgramBlock
@@ -136,7 +138,7 @@ Assignment
       return new Nodes.Assignment({lhs: lhs, rhs: rhs});
     }
   / lhs:Param Ws* '=' Ws* rhs:AssignRhs{
-      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
+       return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
 
 Conditional
@@ -373,7 +375,7 @@ PairElemType
    or underscores.
 */
 Ident
-  = i:Label { return new Nodes.Ident(i); }
+  = i:Label { return new Nodes.Ident({label: i}); }
 Label
   = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return [a].concat(b); }
 
