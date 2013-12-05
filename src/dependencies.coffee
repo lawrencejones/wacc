@@ -9,35 +9,74 @@
 
 path = require 'path'
 SymbolTable = require path.join(__dirname, 'symbolTable')
+SemanticError = (@mssg, @node, @name = 'SemanticError') ->
 
 module.exports =
-    
+  
   # If given this dependency then the said node has a symbolTable field
   # which shall be used to verify scope queries
   symbolTable: ->
-    @symbolTable = new SymbolTable(@)
+    (@checks ?= []).unshift (tbl) ->
+      @symbolTable = new SymbolTable(tbl)
 
-  # Initiates verification of the two/one leaf/es
-  childVerification: ->
+  # Valid semantic check for entire program
+  validSemantics: ->
+    (@checks ?= []).push ->
+      c.verify(@symbolTable) for c in @children when c.className == 'Statement'
+
+  # Calls verify on it's children
+  # NB - This function is high priority, must be at front of checks
+  childVerification: (children...) ->
+    (@checks ?= []).unshift (tbl) ->
+      @children[child]?.verify(tbl) for child in children
+
+  # Takes all potential lhs types, finished with the return type
+  # Ex params - int, bool, bool
+  typeRestriction: (childTypes...) ->
     (@checks ?= []).push (tbl) ->
-      @left?.verify?(tbl)
-      @right?.verify?(tbl)
+      ctype = (c.type?(tbl) for own k,c of @children).reduce (a,b) ->
+        (a if (b ?= a) == a)
+      for t in childTypes
+        return true if t == ctype
 
-  # Means nodes are required to register or verify themselves against
-  # the symbol table, and any type questions will need to be referenced
-  symbolTableVerification: ->
+  # Takes the return type
+  returnType: (rtype) ->
+    # Set this node type to return the rtype (axiom)
+    @type = -> rtype
+
+  # Determines the return type for a unary
+  unaryReturn: ->
+    t = {
+      NegOp: 'int'
+      LenOp: 'int'
+      ToIntOp: 'int'
+      OrdOp: 'char'
+      NotOp: 'bool' }[@className]
     @type = (tbl) ->
-      @btype ?= tbl.verify this
-      return @btype
+      # If not verified then verify
+      @verify(tbl); t
 
-  typeEquality: ->
+  # Ident scoping check
+  scopingVerification: ->
+    @type = (tbl) ->
+      type = tbl.verify @
+      (@type = -> type); type
+
+  # Verifies that all children have the same type
+  typeEquality: (fields...) ->
     (@checks ?= []).push (tbl) ->
-      if not (@left? and @right?)
-        throw new Error 'Missing operands'
-      if @left?.type(tbl) != @right?.type(tbl)
-        console.log @left.type(tbl)(tbl)
-        console.log "Mismatched types #{@left.type(tbl)}/#{@right.type(tbl)}"
-        
+      eq = (@children[k].type(tbl) for k in fields when @children[k]?.type?)
+      eq.reduce ((t1,t2) ->
+        if t1 != t2
+          throw new SemanticError "Type equality failed: #{t1} != #{t2}"
+        else t2), true
+
+  # Configures function app and decl
+  functionParams: ->
+    switch @className
+      when 'FunctionDeclaration' then null
+      when 'FunctionApplication' then null
+
 
   # Returns the basic type for literals
   literalType: ->
@@ -49,12 +88,4 @@ module.exports =
         CharLiteral: 'char'
         PairLiteral: 'pair'
       }[@className]
-
-  # Valid semantic check for entire program
-  validSemantics: ->
-    (@posts ?= []).push ->
-      @statement?.verify?(@symbolTable)
-
-
-
 

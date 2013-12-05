@@ -39,166 +39,155 @@
   to be run on finishing construction of that specific node.
 ###
 
-dependencies = require (require 'path').join(__dirname, 'dependencies')
-module.exports ?= {}
+path = require 'path'
+dependencies = require (path.join __dirname, 'dependencies')
+BaseNode = require (path.join __dirname, 'baseNode')
+module?.exports ?= {}
 
-createNodes = (template, parent = (@params = [], @deps = []) ->) ->
-
+# Function to start node creation
+createNodes = (template, Parent = BaseNode) ->
   # For the className and the following specs of the child
   for own className,specs of template
-    specs ?= [[]]
-    obj = class extends parent
+    # Match against specs
+    [ps, ds, subclasses] = (specs ?= [[]])
+    # If just a list of deps then switch ps and ds
+    if specs.length == 1 then ds = ps; ps = []
+    # Set Child to be Parent initially
+    class Child extends Parent
       @className: className
-      constructor: (params...) ->
-        @className = this.constructor.className
-        dependencies[f]?.call?(this) for f in @deps
-        @type ?= (tbl) ->
-          @btype or @left?.type?(tbl) or 'UNKNOWN'
-        this.populate(params...) if params?
-        this
-      populate: ->
-        for k, i in @params
-          this[k] = arguments[i]
-          this[k].parent = @ if this[k]?.className?
-        f.call?(this) for f in @posts ? []
-        this
-      verify: (tbl) ->
-        @checks.pop().call?(this, tbl) while @checks?[0]?
+      paramKeys: ps.concat (Parent::paramKeys ? [])
+      depKeys: ds.concat (Parent::depKeys ? [])
 
-    # If a category
-    if specs.length > 1
-      [ps, deps, subclasses] = specs
-      obj::params = (obj?.__super__?.params ? []).concat ps
-      obj::deps = (obj?.__super__?.deps ? []).concat deps
-      createNodes subclasses, obj
-    # If a final node
+    # _CATEGORY_
+    # UnaryOps: [ [params], [deps], {subclasses} ]
+    if subclasses?
+      createNodes subclasses, Child
     else
-      obj::deps = (obj?.__super__?.deps ? []).concat specs[0]
-      module.exports[className] = obj
+      module.exports[className] = Child
+  
+  module.exports
 
-  return module.exports
 
 # Function call to create nodes, initialises the node structure
 createNodes
-  # All infix operations
-  BinOps: [
-    ['left', 'right'] # Parameters that all in BinOps include
-    ['childVerification'] # Post condition checks
-    AssignOps: [
-      [], ['typeEquality']
-      AssignEqOp: null
-    ]
-    ArithmeticOps: [
-      [], []
-      DivZeroRisks: [
-        [], []
-        DivOp: null
-        ModOp: null
-      ]
-      MulOp: null
-      AddOp: null
-      SubOp: null
-    ]
-    BooleanOps: [
-      [], []
-      AndOp: null
-      OrOp: null
-    ]
-    ComparisonOps: [
-      [], []
-      EqOp: null
-      NotEqOp: null
-      NumericComparisons: [
-        [], []
-        LessOp: null
-        LessEqOp: null
-        GreaterOp: null
-        GreaterEqOp: null
-      ]
-    ]
-    Statement: null
-    Expression: null
-  ]
-
   UnaryOps: [
-    ['operand'], ['childVerification']
-    SignOps: [
-      [], ['onlyInts']
-      NegOp: null
+    ['rhs'], ['unaryReturn']
+    # TODO - Determine efficient method
+    NegOp: [['typeRestriction(int)']]       # int  -> int
+    OrdOp: [['typeRestriction(int)']]       # int  -> char
+    LenOp: [['typeRestriction(string)']]    # str  -> int
+    ToIntOp: [['typeRestriction(char)']]    # char -> int
+    NotOp: [['typeRestriction(bool)']]      # bool -> bool
+    PairOps: [
+      [], ['typeRestriction(pair)']
+      FstOp: null
+      SndOp: null
     ]
-    BuiltinOps: [
-      [], []
-      LenOp: null
-      OrdOp: null
-      ToIntOp: null
-    ]
-    NotOp: null
   ]
 
+  BinOps: [
+    ['lhs', 'rhs'], []
+    ArithmeticOps: [  # int -> int -> int
+      [], ['typeRestriction(int)', 'returnType(int)']
+      MulOp: null     # int -> int -> int 
+      AddOp: null     # int -> int -> int
+      SubOp: null     # int -> int -> int
+      DivZeroOps: [
+        [], []
+        DivOp: null   # int -> int -> int
+        ModOp: null   # int -> int -> int
+      ]
+      ComparisonOps: [
+        [], ['returnType(bool)']
+        LessOp: null       # int  -> int  -> bool
+        LessEqOp: null     # int  -> int  -> bool 
+        GreaterOp: null    # int  -> int  -> bool
+        GreaterEqOp: null  # int  -> int  -> bool
+      ]
+    ]
+    LogicalOps: [
+      [], ['typeRestriction(bool)', 'returnType(bool)']
+      AndOp: null        # bool -> bool -> bool
+      OrOp: null         # bool -> bool -> bool
+    ]
+    EqualityOps: [
+      [], ['typeRestriction(int,bool)', 'returnType(bool)']
+      EqOp: null         # int|bool -> int|bool -> bool
+      NotEqOp: null      # int|bool -> int|bool -> bool
+    ]
+    AssignmentOps: [
+      [], ['typeEquality(lhs,rhs)']
+      Declaration: null  # { left: Ident,     right: AssignRhs }
+      Assignment: null   # { left: AssignLhs, right: AssignRhs }
+    ]
+  ]
+
+  # Node to represent a single statement and it's successor
+  Statement: [['left', 'right'], ['childVerification(left,right)']]
   Statements: [
-    ['operand'], []
-    Skip: null
-    Print: null
-    Println: null
-    Read: [['onlyString']]
-    Free: null
-    Return: null
-    PairAccessor: null
-    Exit: null
+    ['rhs'], []
+    Skip: null     # NA
+    Return: null   # any
+    Read: null     # any
+    Exit: null     # any
+    Print: null    # any
+    Println: null  # any
+    Free: [['typeRestriction(pair)']]  # pair
   ]
 
-  FunctionApplications: [
-    ['label', 'params'], ['validParams']
-    FunctionApplication: null
+  Functions: [
+    ['label'], ['functionParams']
+    FunctionDeclaration: [
+      ['paramList', 'rtype', 'statement'], ['symbolTable']
+    ]
+    FunctionApplication: [['args'], ['validCall']]
   ]
 
   Scopes: [
     [], ['symbolTable']
-    NestedScopes: [
-      ['statement'], []
-      Scope: null
-      Functions: [
-        ['ident', 'btype', 'typeSignature'], []
-        Function: null
-      ]
-    ]
-    Programs: [
-      ['functions', 'statement'], []
-      Program: [['validSemantics']]
-    ]
+    # Formed by begin .. end syntax
+    Scope: [['statement'],[]]
+    Program: [['statement', 'functions'], ['validSemantics']]
     FlowConstructs: [
-      ['condition', 'body'], []
+      ['condition', 'body'], ['validCondition']
+      While: null   # int|bool -> int|bool -> bool
       Conditionals: [
         ['elseBody'], []
         Conditional: null
       ]
-      While: null
     ]
   ]
 
-  Symbols: [
-    ['label'], ['symbolTableVerification']
-    Ident: null
-    TypedSymbols: [
-      ['btype'], []
-      Declaration: null
-      Param: null
+  Lookups: [
+    ['label', 'index'], []
+    ArrayLookup: [['checkInBounds']] #check array exists index has to be int
+    PairLookup: null #check exists 
+  ]
+
+  TypedNodes: [
+    ['typeSig'], []
+    Param: [[], ['scopingVerification']]      # int|bool|string|char
+    ArrayType: null  # int[][]
+  ]
+
+  Terminals: [
+    [], []
+    Ident: [['label'],['scopingVerification']]
+    Literals: [
+      ['value'], ['literalType']
+      IntLiteral: null
+      BoolLiteral: null
+      CharLiteral: null
+      StringLiteral: null
+      ArrayLiteral: null
+      PairLiteral: null
     ]
   ]
 
-  # TODO - Implement pairs
-  Literals: [
-    ['value'], ['literalType']
-    StringLiteral: null
-    IntLiteral: null
-    BoolLiteral: null
-    CharLiteral: null
-    PairLiteral: null
+  Pairs: [
+    [], []
+    PairType: [['t1', 't2'], []]
+    PairRhs:  [['v1', 'v2'], []]
   ]
-
-  DepthLiterals: [
-    ['dimension'], []
-    ArrayElem: [['validAccess']]
-    ArrayLiteral: [['homogenousTypes']]
-  ]
+  
 
