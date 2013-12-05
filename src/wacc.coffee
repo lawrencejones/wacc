@@ -7,12 +7,15 @@
 #       as a single wacc object that will contain all functions, data etc.
 ###############################################################################
 
-[syntaxParser, errorFormatter] = require './syntax'
+[syntaxParser, errorFormatter, syntaxErr] = require './syntax'
 nodes = require './nodes'
 
 module.exports =
 
   Parser: syntaxParser
+  Errors:
+    SyntaxError: syntaxErr
+    SemanticError: null
   ErrorFormatter: errorFormatter
   CodeGenerator: null
   Optimiser: null

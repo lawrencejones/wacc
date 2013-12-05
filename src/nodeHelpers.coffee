@@ -7,28 +7,6 @@
 ###############################################################################
 
 module?.exports =
-  constructLiteral : (Nodes, key, value) ->
-    literalLookup =
-      string: Nodes.StringLiteral
-      char:   Nodes.CharLiteral
-      int:    Nodes.IntLiteral
-      bool:   Nodes.BoolLiteral
-      array:  Nodes.ArrayLiteral
-      pair:   Nodes.PairLiteral
-    
-    new literalLookup[key]  value
-  
-  constructStatement : (Nodes, key, value) ->
-    statementLookup =
-      skip:    Nodes.Skip
-      print:   Nodes.Print
-      println: Nodes.Println
-      read:    Nodes.Read
-      free:    Nodes.Free
-      return:  Nodes.Return
-      exit:    Nodes.Exit
-  
-    new statementLookup[key] value
   
   constructUnary : (Nodes, key, value) ->
     unaryLookup =
@@ -39,8 +17,18 @@ module?.exports =
       'toInt': Nodes.ToIntOp
   
     new unaryLookup[key] value
+
+  constructStatement : (Nodes, key, value) ->
+    statementLookup =
+      'println':  Nodes.Println
+      'print':    Nodes.Print
+      'free':     Nodes.Free
+      'read':     Nodes.Read
+      'exit':     Nodes.Exit
   
-  constructBinary : (Nodes, key, first, second) ->
+    new statementLookup[key] value
+  
+  constructBinary : (Nodes, key, value) ->
     binaryLookup =
       '*':   Nodes.MulOp
       '/':   Nodes.DivOp
@@ -56,4 +44,6 @@ module?.exports =
       '&&':  Nodes.AndOp
       '||':  Nodes.OrOp
   
-    new binaryLookup[key] first, second
+    new binaryLookup[key] value
+
+

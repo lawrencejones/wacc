@@ -21,16 +21,17 @@
    zero or more functions.
 */
 Start
-  = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{ 
-      if (main == '') return {};
-      return main;
-}
+  = Comment* main:ProgramBlock? Ws* (Ws+ Comment*)?{
+      main.verify();
+  }
 
 ProgramBlock
   = ('begin' Ws+ body:ProgramBody Ws* 'end'){ return body; }
 
 ProgramBody
-  = fs:(Function/Comment)* ss:Statement{ return new Nodes.Program((fs || []), ss); }
+  = fs:(Function/Comment)* s:Statement{
+      return new Nodes.Program({ statement: s, functions:(fs || [])});
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions and Parameters
@@ -42,23 +43,24 @@ ProgramBody
    which encapsulate statements.
 */
 Function
-  = fsig:FunctionDeclaration (Ws* 'is' Ws+) ss:FunctionBody Ws+ 'end' Ws*{
-    return new Nodes.Function(ss, fsig.ident, fsig.type, fsig.typeSignature);
+  = fsig:FunctionDeclaration (Ws* 'is' Ws+) s:FunctionBody Ws+ 'end' Ws*{
+    fsig.statement = s;
+    return new Nodes.FunctionDeclaration(fsig);
   }
 
 FunctionBody
-  = ReturnStatement
+  = s:ReturnStatement { return s; }
 
 FunctionDeclaration
   = t:Type Ws+ i:Label Ws* ts:TypeSignature{
-    if (ts == '') ts = null;
-    return {'ident': i, 'type':t, 'typeSignature':ts};
+    return {rtype: t, ident: i, paramList: ts};
   }
 
 TypeSignature
   = '(' Ws* pl:ParamList? Ws* ')'{
+    if (pl == '') return [];
     return pl;
-}
+  }
 
 /*
    Defines a list of parameter declarations with their respective types for
@@ -79,7 +81,9 @@ ParamListTail
    Defines a single parameter token.
 */
 Param
-  = t:Type Ws+ i:Label{ return new Nodes.Param(i,t); }
+  = t:Type Ws+ i:Label{
+    return new Nodes.Param( {ident: i, typeSig: t} );
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WACC Statements
@@ -92,57 +96,70 @@ Param
 */
 Statement
   = a:StatementType b:StatementTail? {
-      if (b == '') b = null;
-      return new Nodes.Statement(a,b);
-    }
+    if (b == '') b = null;
+    return new Nodes.Statement({left: a, right: b});
+  }
 
 StatementType
-  = a:'skip'{ 
-      return Helpers.constructStatement(Nodes, a, null);
-    }
+  = a:'skip' { 
+    return new Nodes.Skip();
+  }
   / key:('println' / 'print' / 'free' / 'read' / 'exit') Ws+ e:Expr{
-      return Helpers.constructStatement(Nodes, key, e);
-    }
-  / Scope / Conditional / While / Assignment
+    return Helpers.constructStatement(Nodes, key, {rhs: e});
+  }
+  / item:(Scope / Conditional / While / Assignment){
+    return item;
+  }
 
 Scope
   = 'begin' Ws+ s:Statement* Ws* 'end' {
-      return new Nodes.Scope(s);
-    }
+    return new Nodes.Scope(s);
+  }
        
 ReturnStatement
   = a:(Statement Ws* ';' Ws+)? 'return' Ws+ e:Expr{
-      var ret = new Nodes.Statement(new Nodes.Return(e));
-      if (a != '') {
-        return a.right = ret;
-      } return ret;
+    var ret = new Nodes.Return({rhs: e});
+    if (a == '')
+    {
+      return new Nodes.Statement({left: ret, right: null});
     }
+    return new Nodes.Statement({left: a, right: ret});
+  }
 
 Assignment
-  = p1:ArrayType Ws+ Label Ws* '=' Ws* p2:ArrayLiteral{
-      return new Nodes.AssignEqOp(p1, p2);
+    // int[] label ...
+  = p1:ArrayType Ws+ i:Label Ws* '=' Ws* rhs:ArrayLiteral{
+      var lhs = new Nodes.ArrayType({ident: i, typeSig: p1});
+      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
-  / p1:Param Ws* '=' Ws* p2:AssignRhs{
-      return new Nodes.AssignEqOp(p1, p2);
+  / lhs:AssignLhs Ws* '=' Ws* rhs:AssignRhs{
+      return new Nodes.Assignment({lhs: lhs, rhs: rhs});
     }
-  / p1:AssignLhs Ws* '=' Ws* p2:AssignRhs{
-      return new Nodes.AssignEqOp(p1, p2);
+  / lhs:Param Ws* '=' Ws* rhs:AssignRhs{
+      return new Nodes.Declaration({lhs: lhs, rhs: rhs});
     }
 
 Conditional
-  = 'if' Ws+ cond:Expr Ws* 'then' Ws+ trueBody:IfBody Ws* 'else' Ws+ falseBody:IfBody Ws* 'fi'{
-    return new Nodes.Conditional(cond, trueBody, falseBody);
+  = 'if' Ws+ cond:Expr Ws* 'then' Ws+ trueBody:IfBody Ws* 'else' Ws+ elseBody:IfBody Ws* 'fi'{
+    return new Nodes.Conditional({
+      condition: cond,
+      body: trueBody,
+      elseBody: elseBody
+    });
   }
 
 IfBody
-  = ss:(Statement / ReturnStatement)?{
-    if (ss = '') ss = {};
-    return ss;
+  = s:(Statement / ReturnStatement)?{
+    if (s = '') return new Nodes.Skip({rhs: null});
+    return s;
 }
 
 While
   = 'while' Ws+ cond:Expr Ws* 'do' Ws+ body:Statement Ws* 'done'{
-    return new Nodes.While(cond, body);
+    return new Nodes.While({
+      condition: cond,
+      body:body
+    });
   }
 
 StatementTail
@@ -159,9 +176,9 @@ StatementTail
    left of the assignment operator.
 */
 AssignLhs
-  = ArrayElem
-  / PairElem
-  / Ident
+  = lhs:(ArrayElem / PairElem / Ident){
+    return lhs;
+  }
 
 /*
    Assign Right Hand Side. Defines what is allowed to appear on the right
@@ -169,12 +186,18 @@ AssignLhs
 */
 AssignRhs
   = 'call' Ws+ label:Ident '(' Ws* args:ArgList? Ws* ')'{
-    return new Nodes.FunctionApplication(label, args);
+    return new Nodes.FunctionApplication({
+      args: args, ident:label
+    });
   }
-  / 'newpair' Ws* '(' Ws* Expr Ws* ',' Ws* Expr Ws* ')' Ws*
-  / PairElem
-  / ArrayLiteral
-  / Expr
+  / 'newpair' Ws* '(' Ws* fst:Expr Ws* ',' Ws* snd:Expr Ws* ')' Ws*{
+    return new Nodes.PairLiteral({
+      value: { fst: fst, snd: snd }
+    });
+  }
+  / rhs:(PairElem / ArrayLiteral / Expr){
+    return rhs;
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function Invokation
@@ -189,7 +212,6 @@ ArgList
     var tail = t || [];
     return [e].concat(tail);
   }
-    
 
 ArgListTail
   = Ws* ',' Ws+ e:Expr{
@@ -237,9 +259,7 @@ ComparisonOp
    Selection of available types within the wacc static typing system.
 */
 Type
-  = ArrayType
-  / PairType
-  / BaseType
+  = (ArrayType / PairType / BaseType)
 
 /*
    The barest type classes for use in wacc.
@@ -258,29 +278,32 @@ BaseType
    recursion issues.
 */
 Expr
-  = left:ExprType tail:ExprTail?{
-    if (tail != '')
+  = lhs:ExprType rhs:ExprTail?{
+    if (rhs != '')
     {
-      return new Helpers.constructBinary(Nodes, tail.op, left, tail.operand);
+      return new Helpers.constructBinary(Nodes, rhs.op, {lhs: lhs, rhs: rhs.exp});
     }
-    return left;
+    return lhs;
   }
 
 ExprTail
-  = (Ws* op:BinOp Ws* right:Expr){ return {'op': op, 'operand': right}; }
+  = (Ws* op:BinOp Ws* exp:Expr){
+    return {op: op, exp: exp};
+  }
 
+// TODO - Form correct precedence
 ExprType
   = '(' Ws* e:Expr Ws* ')'{
     return e;
   }
-  / ArrayElem / PairElem
-  / lit:(CharLiteral / StrLiteral / PairLiteral / IntLiteral / BoolLiteral){
-    return Helpers.constructLiteral(Nodes, lit[0], lit[1]);
+  / e:(ArrayElem / PairElem / CharLiteral / StrLiteral / 
+        PairLiteral / IntLiteral / BoolLiteral){
+    return e;
   }
   / op:UnaryOp Ws* value:Expr{
-    return Helpers.constructUnary(Nodes, op, value);
+    return Helpers.constructUnary(Nodes, op, {rhs: value});
   }
-  / i:Ident { return i; }
+  / e:Ident { return e; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -294,16 +317,19 @@ ExprType
 */
 ArrayType
   = t:BaseType bs:('[' ']')+{
-    return { 'type': t, 'depth': bs.length };
+    return {base: t, depth: bs.length};
   }
 
 /*
    Defines elements within wacc arrays.
 */
 ArrayElem
-  = i:Ident accessors:('[' Ws* Expr Ws* ']')+{
-    return new Nodes.ArrayElem(i, accessors);
+  = i:Ident accessors:ArrayAccessor+{
+    return new Nodes.ArrayLookup({ident: i, index:accessors});
   }
+
+ArrayAccessor
+  = '[' Ws* e:Expr Ws* ']'{ return e; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Pairs
@@ -319,11 +345,10 @@ PairType
 
 /*
    Defines what is possible for an element of a pair.
-   TODO - lookup exact usage.
 */
 PairElem
   = a:PairAccessor Ws+ e:Expr{
-    return new Nodes.PairAccessor({'value': e, 'selector': a}); 
+    return new {fst: Nodes.FstOp, snd: Nodes.SndOp}[a](e);
   }
 
 PairAccessor
@@ -350,7 +375,7 @@ PairElemType
 Ident
   = i:Label { return new Nodes.Ident(i); }
 Label
-  = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return a + b; }
+  = a:[_a-zA-Z] b:[_a-zA-Z0-9]* { return [a].concat(b); }
 
 /*
    Defines all the reserved words of the language, including keywords
@@ -396,8 +421,12 @@ IntLiteral
   var a = parseInt(digits.join(''),10);
   if (sign == '-') a = -a;
   if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
-    throw new SyntaxError();
-  else return ['int', a];
+  {
+    e = new SyntaxError('Integer between ±2^31', a);
+    e.line = line(); e.column = column();
+    throw e;
+  }
+  else return new Nodes.IntLiteral({value: a});
 }
 
 /*
@@ -412,7 +441,7 @@ IntSign
 */
 BoolLiteral
   = bool:('true' / 'false'){
-    return ['bool', bool == 'true'];
+    return new Nodes.BoolLiteral({value: bool == 'true'});
   }
 
 /*
@@ -421,7 +450,7 @@ BoolLiteral
 */
 CharLiteral
   = c:("#"/ "'" (Character/[#]) "'"){
-    return ['char', c];
+    return new Nodes.CharLiteral({value: c});
   }
 
 /*
@@ -430,7 +459,7 @@ CharLiteral
 */
 StrLiteral
   = '"' chars:Character* '"'{
-    return ['string', chars.join('')];
+    return new Nodes.StringLiteral({value: chars.join('')});
   }
 
 /*
@@ -439,7 +468,7 @@ StrLiteral
 */
 Character
   = [^\\\'\"]
-  / '\\' EscapedChar
+  / EscapedChar
 
 /*
    Defines the array literal notation. Zero or more elements demarkated
@@ -447,7 +476,7 @@ Character
 */
 ArrayLiteral
   = '[' Ws* elems:ArrayLiteralList? Ws* ']'{
-    return new Nodes.ArrayLiteral(elems);
+    return new Nodes.ArrayLiteral({value: elems});
   }
 
 ArrayLiteralList
@@ -457,7 +486,7 @@ ArrayLiteralList
 
 ArrayLiteralListTail
   = Ws* ',' Ws* e:Expr es:ArrayLiteralListTail?{
-    if (es = '') return e;
+    if (es = '') return [e];
     return [e].concat(es);
   }
 
@@ -466,7 +495,7 @@ ArrayLiteralListTail
    the null value. New pairs are created via the `newpair` call.
 */
 PairLiteral
-  = 'null'{ return ['pair', null]; }
+  = 'null'{ return new Nodes.PairLiteral({value: 'null'}); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fundamentals
@@ -490,7 +519,7 @@ Digit
    used in conjunction with a backslash.
 */
 EscapedChar
-  = '0'/ 'b'/ 't' / 'n' / 'f' / 'r' / '"' / "'" / '\\'
+  = '\\' c:[0btnfr"'\\] { return '\\' + c; }
 
 /*
    Defines the different characters that may represent whitespace.

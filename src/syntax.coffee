@@ -26,11 +26,17 @@ parse = (src, opt = {}) ->
   try
     parser.parse(src)
   catch err
-    throw err
-    mssg = syntaxError(err, src, opt['filename'])
-    console.log mssg if opt['verbose']
-    err.mssg = mssg
-    throw err
+    if err.name == 'SyntaxError'
+      mssg = syntaxError(err, src, opt['filename'])
+      console.log mssg if opt['verbose']
+      err.mssg = mssg
+      throw err
+    else if err.name == 'SemanticError'
+      console.log err.mssg
+      throw err
+    else
+      err.mssg = "Error processing file #{opt.filename}\n"
+      throw err
 
 # Export the parse function
-module.exports = [ parse, syntaxError ]
+module.exports = [ parse, syntaxError, parser.SyntaxError]

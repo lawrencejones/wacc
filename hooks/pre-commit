@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+crrtBranch = (/(?<=\*\s).*/.match `git branch`)
+user = `echo $USER`.gsub "\n", ""
+if not ['lawrencejones', 'alanvey'].include? user
+  if crrtBranch.to_s != 'F_CodeGen'
+    puts 'Wrong branch!'
+    exit 1
+  end
+end
+
+if not system 'make'
+  puts 'Compilation failed.'
+  exit 1
+end
+if not system 'coffee ./src/wacc.coffee'
+  puts 'Wacc module failed.'
+  exit 1
+end
+
