@@ -1,6 +1,6 @@
 # WACC Compiler Makefile - Group 27
 COFFEE := coffee
-COFFEE_FLAGS := --compile --bare
+COFFEE_FLAGS := --compile --bare --map
 PEG := pegjs
 
 # Setup file locations
