@@ -422,10 +422,12 @@ IntLiteral
   = sign:IntSign? digits:Digit+{
   var a = parseInt(digits.join(''),10);
   if (sign == '-') a = -a;
-  if ((a > Math.pow(2, 31) - 1) || (a < -Math.pow(2,31)))
+  if ((a > (Math.pow(2, 31) - 1)) || (a < -Math.pow(2,31)))
   {
     e = new SyntaxError('Integer between ±2^31', a);
-    e.line = line(); e.column = column();
+    pos = computeErrorPosition();
+    e.line = pos.line; e.column = pos.column;
+    e.name = 'SyntaxError';
     throw e;
   }
   else return new Nodes.IntLiteral({value: a});
