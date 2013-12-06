@@ -46,6 +46,16 @@ module?.exports = class SymbolTable
     else
       @tbl[symbol] = {sig: sig, type: type}
 
+  # Used for assembly registers
+  declareReg: (symbol, reg) ->
+    if @tbl.hasOwnProperty(symbol)
+      symbol.reg = reg
+    else
+      @tbl[symbol] = {reg: reg}
 
+  getReg: (symbol) ->
+    if not (s = @tbl[symbol])?
+      throw new Error 'Variable not declared'
+    else s.reg
 
 
